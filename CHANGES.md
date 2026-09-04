@@ -160,3 +160,14 @@ document
 
     renderDashboard();
   });
+
+# DEMO 6
+
+Ctrl + Shift + C 
+Source, js -> render.js
+debug line     ev.status = e.target.value; (515)
+Change an evidence status
+Check Closure Status "unreviewed"
+In console e.target.value
+Check Closure Status "reviewed
+![alt text](image.png)
