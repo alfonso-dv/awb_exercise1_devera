@@ -185,3 +185,117 @@ const container = document.getElementById("dashboardContent");
 let reviewedCount = 0;
 
 Done in every module
+
+# DEMO 9
+data.js
+Sequencing the loadCorePeopleAndLocations() from using .then to async and wait
+From:
+function loadCorePeopleAndLocations(
+  renderDashboard,
+  populateAllDropdowns
+) {
+  return fetch("data/case.json").then(function (caseRes) {
+    return caseRes.json().then(function (caseJson) {
+      state.caseData = caseJson;
+
+      return fetch("data/people.json").then(function (peopleRes) {
+        return peopleRes.json().then(function (peopleJson) {
+          state.allPeople = peopleJson;
+
+          return fetch("data/locations.json").then(function (locationsRes) {
+            return locationsRes.json().then(function (locationsJson) {
+              state.allLocations = locationsJson;
+
+              hideLoadingStep();
+              renderDashboard();
+              populateAllDropdowns();
+            });
+          });
+        });
+      });
+    });
+  });
+}
+
+to
+
+async function loadCorePeopleAndLocations(
+  renderDashboard,
+  populateAllDropdowns
+) {
+  const caseRes = await fetch("data/case.json");
+  const caseJson = await caseRes.json();
+  state.caseData = caseJson;
+
+  const peopleRes = await fetch("data/people.json");
+  const peopleJson = await peopleRes.json();
+  state.allPeople = peopleJson;
+
+  const locationsRes = await fetch("data/locations.json");
+  const locationsJson = await locationsRes.json();
+  state.allLocations = locationsJson;
+
+  hideLoadingStep();
+  renderDashboard();
+  populateAllDropdowns();
+}
+
+loadAllData, from 
+export function loadAllData({
+  renderDashboard,
+  populateAllDropdowns,
+  applyStoredBookmarkFlags,
+  renderEvidenceList,
+  renderTimeline
+}) {
+  showLoadingOverlay("Loading case file…");
+  state.loadingStepsRemaining = 2;
+
+  return loadCorePeopleAndLocations(
+    renderDashboard,
+    populateAllDropdowns
+  ).then(function () {
+    loadEvidenceData(
+      renderDashboard,
+      populateAllDropdowns,
+      applyStoredBookmarkFlags,
+      renderEvidenceList
+    );
+
+    loadTimelineData(
+      renderDashboard,
+      populateAllDropdowns,
+      renderTimeline
+    );
+  });
+}
+to
+
+export async function loadAllData({
+  renderDashboard,
+  populateAllDropdowns,
+  applyStoredBookmarkFlags,
+  renderEvidenceList,
+  renderTimeline
+}) {
+  showLoadingOverlay("Loading case file…");
+  state.loadingStepsRemaining = 2;
+
+  await loadCorePeopleAndLocations(
+    renderDashboard,
+    populateAllDropdowns
+  );
+
+  loadEvidenceData(
+    renderDashboard,
+    populateAllDropdowns,
+    applyStoredBookmarkFlags,
+    renderEvidenceList
+  );
+
+  loadTimelineData(
+    renderDashboard,
+    populateAllDropdowns,
+    renderTimeline
+  );
+}

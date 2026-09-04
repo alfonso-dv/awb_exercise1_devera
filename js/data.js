@@ -1,6 +1,6 @@
 import { state } from "./state.js";
 
-export function loadAllData({
+export async function loadAllData({
   renderDashboard,
   populateAllDropdowns,
   applyStoredBookmarkFlags,
@@ -10,23 +10,23 @@ export function loadAllData({
   showLoadingOverlay("Loading case file…");
   state.loadingStepsRemaining = 2;
 
-  return loadCorePeopleAndLocations(
+  await loadCorePeopleAndLocations(
     renderDashboard,
     populateAllDropdowns
-  ).then(function () {
-    loadEvidenceData(
-      renderDashboard,
-      populateAllDropdowns,
-      applyStoredBookmarkFlags,
-      renderEvidenceList
-    );
+  );
 
-    loadTimelineData(
-      renderDashboard,
-      populateAllDropdowns,
-      renderTimeline
-    );
-  });
+  loadEvidenceData(
+    renderDashboard,
+    populateAllDropdowns,
+    applyStoredBookmarkFlags,
+    renderEvidenceList
+  );
+
+  loadTimelineData(
+    renderDashboard,
+    populateAllDropdowns,
+    renderTimeline
+  );
 }
 
 function showLoadingOverlay(msg) {
@@ -54,31 +54,25 @@ function hideLoadingStep() {
   }
 }
 
-function loadCorePeopleAndLocations(
+async function loadCorePeopleAndLocations(
   renderDashboard,
   populateAllDropdowns
 ) {
-  return fetch("data/case.json").then(function (caseRes) {
-    return caseRes.json().then(function (caseJson) {
-      state.caseData = caseJson;
+  const caseRes = await fetch("data/case.json");
+  const caseJson = await caseRes.json();
+  state.caseData = caseJson;
 
-      return fetch("data/people.json").then(function (peopleRes) {
-        return peopleRes.json().then(function (peopleJson) {
-          state.allPeople = peopleJson;
+  const peopleRes = await fetch("data/people.json");
+  const peopleJson = await peopleRes.json();
+  state.allPeople = peopleJson;
 
-          return fetch("data/locations.json").then(function (locationsRes) {
-            return locationsRes.json().then(function (locationsJson) {
-              state.allLocations = locationsJson;
+  const locationsRes = await fetch("data/locations.json");
+  const locationsJson = await locationsRes.json();
+  state.allLocations = locationsJson;
 
-              hideLoadingStep();
-              renderDashboard();
-              populateAllDropdowns();
-            });
-          });
-        });
-      });
-    });
-  });
+  hideLoadingStep();
+  renderDashboard();
+  populateAllDropdowns();
 }
 
 function loadEvidenceData(
@@ -93,7 +87,6 @@ function loadEvidenceData(
     })
     .then(function (data) {
       state.allEvidence = data;
-
       state.evidenceViewLoading = false;
 
       applyStoredBookmarkFlags();
