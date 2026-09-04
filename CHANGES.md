@@ -42,3 +42,11 @@ allowing the array to be sorted independently by creating a copy.
 
 loadNoteAsync() in app.js
 Adding a .then makes it so the note is accessed after Promise has been resolved
+
+# DEMO 4
+![alt text](image.png)
+
+Problem was var i was being called after it has been initially called once so it ends up using the changed i creating errors
+
+"let i" in events.js creates a new i binding for each loop
+![alt text](image-1.png)
