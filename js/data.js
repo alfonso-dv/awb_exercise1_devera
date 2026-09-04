@@ -91,7 +91,29 @@ function loadEvidenceData(
 
       applyStoredBookmarkFlags();
 
-      state.filteredEvidence = state.allEvidence;
+      state.filteredEvidence = state.allEvidence.slice();
+
+      console.log(
+        "Same array?",
+        state.filteredEvidence === state.allEvidence
+      );
+
+      console.log("Original:", state.allEvidence.map(function (ev) {
+        return ev.title;
+      }));
+
+      state.filteredEvidence.sort(function (a, b) {
+        return a.title.localeCompare(b.title);
+      });
+
+      console.log(
+        "allEvidence after filteredEvidence sort:",
+        state.allEvidence.map(function (ev) {
+        return ev.title;
+      })
+    );
+
+      //this log is used to check if the original array is sorted or not and bypasses the bug that is yet to be fixed.
 
       renderDashboard();
       populateAllDropdowns();

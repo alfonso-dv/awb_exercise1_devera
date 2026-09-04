@@ -360,6 +360,13 @@ export function applyStoredBookmarkFlags() {
 export function handleSortChange() {
   var sortValue = document.getElementById("sortEvidence").value;
 
+  console.log(
+    "Before sort allEvidence:",
+    state.allEvidence.map(function (ev) {
+      return ev.title;
+    })
+  );
+
   if (sortValue === "title-asc") {
     state.filteredEvidence.sort(function (a, b) {
       return a.title.localeCompare(b.title);
@@ -377,6 +384,14 @@ export function handleSortChange() {
       return new Date(b.timestamp) - new Date(a.timestamp);
     });
   }
+
+  console.log(
+    "After sort allEvidence:",
+    state.allEvidence.map(function (ev) {
+      return ev.title;
+    })
+  );
+
   renderEvidenceList();
 }
 
