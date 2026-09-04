@@ -109,30 +109,27 @@ function loadEvidenceData(
     });
 }
 
-function loadTimelineData(
+async function loadTimelineData(
   renderDashboard,
   populateAllDropdowns,
   renderTimeline
 ) {
-  return fetch("data/timeline.json")
-    .then(function (res) {
-      return res.json();
-    })
-    .then(function (data) {
-      state.allTimeline = data;
+  try {
+    const res = await fetch("data/timeline.json");
+    const data = await res.json();
 
-      renderDashboard();
+    state.allTimeline = data;
 
-      if (state.currentPage === "timeline") {
-        renderTimeline();
-      }
+    renderDashboard();
 
-      populateAllDropdowns();
-    })
-    .catch(function (err) {
-      console.log("timeline load error", err);
-    })
-    .finally(function () {
-      hideLoadingStep();
-    });
+    if (state.currentPage === "timeline") {
+      renderTimeline();
+    }
+
+    populateAllDropdowns();
+  } catch (err) {
+    console.log("timeline load error", err);
+  } finally {
+    hideLoadingStep();
+  }
 }

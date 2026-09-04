@@ -7,7 +7,7 @@ export function setupEventListeners({
   const navButtons = document.querySelectorAll(".nav-btn");
 
   for (let i = 0; i < navButtons.length; i++) {
-    navButtons[i].addEventListener("click", function () {
+    navButtons[i].addEventListener("click", () => {
       const targetView = navButtons[i].getAttribute("data-view");
 
       console.log("nav clicked:", targetView);
@@ -60,7 +60,7 @@ export function setupEventListeners({
 
   document
     .getElementById("hypConfidence")
-    .addEventListener("input", function (e) {
+    .addEventListener("input", (e) => {
       document.getElementById("hypConfidenceValue").textContent =
         e.target.value;
     });
