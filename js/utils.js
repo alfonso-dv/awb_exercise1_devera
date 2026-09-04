@@ -30,22 +30,22 @@ export function formatDate(ts) {
   );
 }
 
-export function getStatusBadgeClass(status) {
+export const getStatusBadgeClass = (status) => {
   const s = (status || "").toLowerCase();
 
   if (s === "reviewed") return "badge-reviewed";
   if (s === "flagged") return "badge-flagged";
 
   return "badge-unreviewed";
-}
+};
 
-export function getRelevanceBadgeClass(relevance) {
+export const getRelevanceBadgeClass = (relevance) => {
   const r = (relevance || "").toLowerCase();
 
   if (r === "relevant") return "badge-relevant";
 
   return "badge-unreviewed";
-}
+};
 
 export function certaintyBadgeClass(certainty) {
   if (certainty === "confirmed") return "reviewed";

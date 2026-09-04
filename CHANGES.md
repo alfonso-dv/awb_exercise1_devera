@@ -299,3 +299,85 @@ export async function loadAllData({
     renderTimeline
   );
 }
+
+# DEMO 10
+Convert functions to use arrow functions
+events.js
+addEventListener:
+document
+  .getElementById("hypConfidence")
+  .addEventListener("input", function (e) {
+    document.getElementById("hypConfidenceValue").textContent =
+      e.target.value;
+  });
+
+to:
+
+document
+  .getElementById("hypConfidence")
+  .addEventListener("input", (e) => {
+    document.getElementById("hypConfidenceValue").textContent =
+      e.target.value;
+  });
+
+from:
+
+  for (let i = 0; i < navButtons.length; i++) {
+    navButtons[i].addEventListener("click", function () {
+      const targetView = navButtons[i].getAttribute("data-view");
+
+      console.log("nav clicked:", targetView);
+    });
+  }
+
+to:
+
+navButtons[i].addEventListener("click", () => {
+  const targetView = navButtons[i].getAttribute("data-view");
+
+  console.log("nav clicked:", targetView);
+});
+
+
+utils.js
+getStatusBadgeClass
+
+export function getStatusBadgeClass(status) {
+  const s = (status || "").toLowerCase();
+
+  if (s === "reviewed") return "badge-reviewed";
+  if (s === "flagged") return "badge-flagged";
+
+  return "badge-unreviewed";
+}
+
+to:
+
+export const getStatusBadgeClass = (status) => {
+  const s = (status || "").toLowerCase();
+
+  if (s === "reviewed") return "badge-reviewed";
+  if (s === "flagged") return "badge-flagged";
+
+  return "badge-unreviewed";
+};
+
+getRelevanceBadgeClass:
+
+export function getRelevanceBadgeClass(relevance) {
+  const r = (relevance || "").toLowerCase();
+
+  if (r === "relevant") return "badge-relevant";
+
+  return "badge-unreviewed";
+}
+
+to:
+
+export const getRelevanceBadgeClass = (relevance) => {
+  const r = (relevance || "").toLowerCase();
+
+  if (r === "relevant") return "badge-relevant";
+
+  return "badge-unreviewed";
+};
