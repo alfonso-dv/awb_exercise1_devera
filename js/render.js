@@ -293,6 +293,9 @@ export function renderEvidenceList() {
   container.innerHTML = html;
 
   // Event delegation for card clicks / bookmark button.
+
+  //Remove any existing click listener before adding to avoid duplicates
+  container.removeEventListener("click", handleEvidenceListClick);
   container.addEventListener("click", handleEvidenceListClick);
 }
 
@@ -509,9 +512,15 @@ function renderEvidenceDetail(ev) {
   section.innerHTML = html;
 
   document.getElementById("detailStatusSelect").addEventListener("change", function (e) {
-    ev.status = e.target.value; // direct mutation of the loaded evidence object
+    ev.status = e.target.value;
+
     renderEvidenceDetail(ev);
-    if (state.viewRendered.evidence) renderEvidenceList();
+
+    if (state.viewRendered.evidence) {
+      renderEvidenceList();
+    }
+
+    renderDashboard();
   });
   document.getElementById("detailRelevanceSelect").addEventListener("change", function (e) {
     ev.relevance = e.target.value;
@@ -653,7 +662,11 @@ export function renderTimeline() {
     var eventLocationNames = [];
     for (var el = 0; el < item.locationIds.length; el++) {
       var evtLoc = findLocationById(item.locationIds[el]);
-      eventLocationNames.push(evtLoc || item.locationIds[el]);
+      eventLocationNames.push(
+        evtLoc
+          ? evtLoc.id + " - " + evtLoc.name
+          : item.locationIds[el]
+      );
     }
     if (eventLocationNames.length > 0) {
       html += '<p class="evidence-meta">Location: ' + eventLocationNames.join(", ") + "</p>";
@@ -698,22 +711,32 @@ function openEvidenceModal(evidenceId) {
     '<button type="button" class="btn btn-primary btn-small" data-open-full="' + ev.id + '">Open full evidence</button>' +
     "</div></div>";
 
-  state.modalCloseListenerCount++;
-  console.log("modal opened, active close listeners:", state.modalCloseListenerCount);
 
-  modal.addEventListener("click", function (e) {
-    if (e.target.classList.contains("modal-close-btn") || e.target.classList.contains("modal-backdrop")) {
+  modal.onclick = function (e) {
+    if (
+      e.target.classList.contains("modal-close-btn") ||
+      e.target.classList.contains("modal-backdrop")
+    ) {
       modal.innerHTML = "";
     }
-    if (e.target.getAttribute && e.target.getAttribute("data-open-full")) {
+
+    if (
+      e.target.getAttribute &&
+      e.target.getAttribute("data-open-full")
+    ) {
+      var evidenceId =
+        e.target.getAttribute("data-open-full");
+
       modal.innerHTML = "";
       navigateTo("evidence");
+
       setTimeout(function () {
-        openEvidenceDetail(e.target.getAttribute("data-open-full"));
+        openEvidenceDetail(evidenceId);
       }, 0);
     }
-  });
-}
+  }
+};
+
 
 export function renderWorkspace() {
   renderBookmarksList();

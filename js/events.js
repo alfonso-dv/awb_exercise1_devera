@@ -1,11 +1,9 @@
 export function setupEventListeners({
-  handleHashChange,
   handleSearchInput,
   renderEvidenceList,
   clearFilters,
   renderTimeline
 }) {
-  window.addEventListener("hashchange", handleHashChange);
 
   var navButtons = document.querySelectorAll(".nav-btn");
 
@@ -36,9 +34,6 @@ export function setupEventListeners({
     .getElementById("filterStatus")
     .addEventListener("change", renderEvidenceList);
 
-  document
-    .getElementById("filterStatus")
-    .setAttribute("onchange", "renderEvidenceList()");
 
   document
     .getElementById("filterRelevance")

@@ -142,7 +142,6 @@ function initApp() {
   loadNotesFromStorage();
 
   setupEventListeners({
-    handleHashChange: handleHashChange,
     handleSearchInput: handleSearchInput,
     renderEvidenceList: renderEvidenceList,
     clearFilters: clearFilters,

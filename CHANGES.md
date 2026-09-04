@@ -50,3 +50,113 @@ Problem was var i was being called after it has been initially called once so it
 
 "let i" in events.js creates a new i binding for each loop
 ![alt text](image-1.png)
+
+# DEMO 5
+
+FIX EVIDENCE LOADING ISSUE data.js
+added:
+state.evidenceViewLoading = false;
+it starts as true and never turns back to false now it does
+
+EVIDENCE CLICK LISTENER GETS ADDED REPEATEDLY render.js
+remove after adding a new one
+container.removeEventListener("click", handleEvidenceListClick);
+
+FILTERSTATUS HAS 2 CHANGE HANDLERS
+events.js
+Delete   
+document
+    .getElementById("filterStatus")
+    .setAttribute("onchange", "renderEvidenceList()");
+
+HASHCHANGE IS REGISTERED TWICE
+events.js
+It already exists in app.js so delete in events.js
+  window.addEventListener("hashchange", handleHashChange);
+      
+      handleHashChange,
+app.js,
+Delete in setupEventListeners
+    handleHashChange: handleHashChange,
+    
+
+ACUUMULATING MODAL CLICK LISTENERS
+render.js
+This function adds a listener after every time the modal opens 
+  modal.addEventListener("click", function (e) {
+    if (e.target.classList.contains("modal-close-btn") || e.target.classList.contains("modal-backdrop")) {
+      modal.innerHTML = "";
+    }
+    if (e.target.getAttribute && e.target.getAttribute("data-open-full")) {
+      modal.innerHTML = "";
+      navigateTo("evidence");
+      setTimeout(function () {
+        openEvidenceDetail(e.target.getAttribute("data-open-full"));
+      }, 0);
+    }
+  });
+
+so instead we can use onclick which replaces instead of adds
+
+modal.onclick = function (e) {
+  if (
+    e.target.classList.contains("modal-close-btn") ||
+    e.target.classList.contains("modal-backdrop")
+  ) {
+    modal.innerHTML = "";
+  }
+
+  if (
+    e.target.getAttribute &&
+    e.target.getAttribute("data-open-full")
+  ) {
+    var evidenceId =
+      e.target.getAttribute("data-open-full");
+
+    modal.innerHTML = "";
+    navigateTo("evidence");
+
+    setTimeout(function () {
+      openEvidenceDetail(evidenceId);
+    }, 0);
+  }
+};
+
+These are now obsolete
+  state.modalCloseListenerCount++;
+  console.log("modal opened, active close listeners:", state.modalCloseListenerCount);
+
+TIMELINE LOCATION DISPLAYS [object Object]
+render.js
+
+findLocationByID() returns a location object, not strings so it can spit out [object Object]
+
+Replace
+eventLocationNames.push(
+  evtLoc || item.locationIds[el]
+);
+
+with 
+
+eventLocationNames.push(
+  evtLoc
+    ? evtLoc.id + " - " + evtLoc.name
+    : item.locationIds[el]
+);
+
+REVIEW PROGRESS BAR DOESN'T UPDATE
+render.js
+The dashboard is never re-rendered so adding renderDashboard at the end of the status listener updates the bar
+document
+  .getElementById("detailStatusSelect")
+  .addEventListener("change", function (e) {
+    ev.status = e.target.value;
+
+    renderEvidenceDetail(ev);
+
+    if (state.viewRendered.evidence) {
+      renderEvidenceList();
+    }
+
+    renderDashboard();
+  });

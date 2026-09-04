@@ -89,6 +89,8 @@ function loadEvidenceData(
     .then(function (data) {
       state.allEvidence = data;
 
+      state.evidenceViewLoading = false;
+
       applyStoredBookmarkFlags();
 
       state.filteredEvidence = state.allEvidence.slice();
