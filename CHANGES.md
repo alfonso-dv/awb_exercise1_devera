@@ -36,3 +36,9 @@ was pointing to the same array which can be seen with the console debug log.
 Changing to 
 state.filteredEvidence = state.allEvidence.slice();
 allowing the array to be sorted independently by creating a copy.
+
+# DEMO 3
+![alt text](image.png)
+
+loadNoteAsync() in app.js
+Adding a .then makes it so the note is accessed after Promise has been resolved
