@@ -30,18 +30,23 @@ export function loadAllData({
 }
 
 function showLoadingOverlay(msg) {
-  var overlay = document.getElementById("loadingOverlay");
-  var text = document.getElementById("loadingText");
+  const overlay = document.getElementById("loadingOverlay");
+  const text = document.getElementById("loadingText");
 
-  if (text) text.textContent = msg;
-  if (overlay) overlay.classList.remove("hidden");
+  if (text) {
+    text.textContent = msg;
+  }
+
+  if (overlay) {
+    overlay.classList.remove("hidden");
+  }
 }
 
 function hideLoadingStep() {
   state.loadingStepsRemaining--;
 
   if (state.loadingStepsRemaining <= 0) {
-    var overlay = document.getElementById("loadingOverlay");
+    const overlay = document.getElementById("loadingOverlay");
 
     if (overlay) {
       overlay.classList.add("hidden");
@@ -94,28 +99,6 @@ function loadEvidenceData(
       applyStoredBookmarkFlags();
 
       state.filteredEvidence = state.allEvidence.slice();
-
-      console.log(
-        "Same array?",
-        state.filteredEvidence === state.allEvidence
-      );
-
-      console.log("Original:", state.allEvidence.map(function (ev) {
-        return ev.title;
-      }));
-
-      state.filteredEvidence.sort(function (a, b) {
-        return a.title.localeCompare(b.title);
-      });
-
-      console.log(
-        "allEvidence after filteredEvidence sort:",
-        state.allEvidence.map(function (ev) {
-        return ev.title;
-      })
-    );
-
-      //this log is used to check if the original array is sorted or not and bypasses the bug that is yet to be fixed.
 
       renderDashboard();
       populateAllDropdowns();

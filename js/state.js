@@ -12,7 +12,6 @@ export const state = {
 
   currentPeopleTab: "people",
   loadingStepsRemaining: 2,
-
   evidenceViewLoading: true,
 
   viewRendered: {
@@ -24,8 +23,6 @@ export const state = {
   },
 
   notesStore: {},
-  modalCloseListenerCount: 0,
-
   latestSearchRequestId: 0
 };
 

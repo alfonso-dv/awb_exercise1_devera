@@ -171,3 +171,17 @@ Check Closure Status "unreviewed"
 In console e.target.value
 Check Closure Status "reviewed
 ![alt text](image.png)
+
+# DEMO 8
+var -> const/let
+const = does not get a new value assigned
+let = can change value
+
+i.e.:
+var container = document.getElementById("dashboardContent");
+var reviewedCount = 0;
+to
+const container = document.getElementById("dashboardContent");
+let reviewedCount = 0;
+
+Done in every module
