@@ -1,0 +1,22 @@
+{
+  "name": "mystery-road-awe-2026",
+  "version": "1.0.0",
+  "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alfonso-dv/awb_exercise1_devera.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alfonso-dv/awb_exercise1_devera/issues"
+  },
+  "homepage": "https://github.com/alfonso-dv/awb_exercise1_devera#readme",
+  "devDependencies": {
+    "vite": "^8.3.0"
+  }
+}
