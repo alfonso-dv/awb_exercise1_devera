@@ -48,10 +48,7 @@ export function setupEventListeners({
     .getElementById("timelineTypeFilter")
     .addEventListener("change", renderTimeline);
 
-  document
-    .getElementById("hypConfidence")
-    .addEventListener("input", (e) => {
-      document.getElementById("hypConfidenceValue").textContent =
-        e.target.value;
-    });
+  document.getElementById("hypConfidence").addEventListener("input", (e) => {
+    document.getElementById("hypConfidenceValue").textContent = e.target.value;
+  });
 }

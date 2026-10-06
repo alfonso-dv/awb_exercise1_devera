@@ -1,14 +1,7 @@
-import {
-  state,
-  STORAGE_KEY_BOOKMARKS,
-  STORAGE_KEY_NOTES
-} from "./state.js";
+import { state, STORAGE_KEY_BOOKMARKS, STORAGE_KEY_NOTES } from "./state.js";
 
 export function saveBookmarksToStorage() {
-  localStorage.setItem(
-    STORAGE_KEY_BOOKMARKS,
-    JSON.stringify(state.bookmarks)
-  );
+  localStorage.setItem(STORAGE_KEY_BOOKMARKS, JSON.stringify(state.bookmarks));
 }
 
 export function loadBookmarksFromStorage() {
@@ -18,10 +11,7 @@ export function loadBookmarksFromStorage() {
 
     state.bookmarks = Array.isArray(parsed) ? parsed : [];
   } catch (err) {
-    console.warn(
-      "Could not read stored bookmarks, starting empty",
-      err
-    );
+    console.warn("Could not read stored bookmarks, starting empty", err);
 
     state.bookmarks = [];
   }
@@ -30,10 +20,7 @@ export function loadBookmarksFromStorage() {
 export function saveNoteForEvidence(evidenceId, text) {
   state.notesStore[evidenceId] = text;
 
-  localStorage.setItem(
-    STORAGE_KEY_NOTES,
-    JSON.stringify(state.notesStore)
-  );
+  localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(state.notesStore));
 }
 
 export function loadNoteForEvidence(evidenceId) {

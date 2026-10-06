@@ -10,10 +10,7 @@ export async function loadAllData({
   showLoadingOverlay("Loading case file…");
   state.loadingStepsRemaining = 2;
 
-  await loadCorePeopleAndLocations(
-    renderDashboard,
-    populateAllDropdowns
-  );
+  await loadCorePeopleAndLocations(renderDashboard, populateAllDropdowns);
 
   loadEvidenceData(
     renderDashboard,
@@ -22,11 +19,7 @@ export async function loadAllData({
     renderEvidenceList
   );
 
-  loadTimelineData(
-    renderDashboard,
-    populateAllDropdowns,
-    renderTimeline
-  );
+  loadTimelineData(renderDashboard, populateAllDropdowns, renderTimeline);
 }
 
 function showLoadingOverlay(msg) {
@@ -103,9 +96,7 @@ function loadEvidenceData(
     .catch(function (err) {
       console.error("Failed to load evidence.json", err);
 
-      alert(
-        "Evidence could not be loaded. Some views may be incomplete."
-      );
+      alert("Evidence could not be loaded. Some views may be incomplete.");
     });
 }
 

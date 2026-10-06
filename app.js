@@ -72,45 +72,29 @@ function handleHashChange() {
     sections[i].classList.remove("active");
   }
 
-  document
-    .getElementById("view-" + hash)
-    .classList.add("active");
+  document.getElementById("view-" + hash).classList.add("active");
 
   const navButtons = document.querySelectorAll(".nav-btn");
 
   for (let n = 0; n < navButtons.length; n++) {
     navButtons[n].classList.remove("active");
 
-    if (
-      navButtons[n].getAttribute("data-view") === hash
-    ) {
+    if (navButtons[n].getAttribute("data-view") === hash) {
       navButtons[n].classList.add("active");
     }
   }
 
-  if (
-    hash === "dashboard" &&
-    !state.viewRendered.dashboard
-  ) {
+  if (hash === "dashboard" && !state.viewRendered.dashboard) {
     renderDashboard();
     state.viewRendered.dashboard = true;
-  } else if (
-    hash === "evidence" &&
-    !state.viewRendered.evidence
-  ) {
+  } else if (hash === "evidence" && !state.viewRendered.evidence) {
     renderEvidenceList();
     state.viewRendered.evidence = true;
-  } else if (
-    hash === "people" &&
-    !state.viewRendered.people
-  ) {
+  } else if (hash === "people" && !state.viewRendered.people) {
     renderPeople();
     renderLocations();
     state.viewRendered.people = true;
-  } else if (
-    hash === "timeline" &&
-    !state.viewRendered.timeline
-  ) {
+  } else if (hash === "timeline" && !state.viewRendered.timeline) {
     renderTimeline();
     state.viewRendered.timeline = true;
   } else if (hash === "workspace") {
