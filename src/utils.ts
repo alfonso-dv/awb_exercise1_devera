@@ -86,5 +86,7 @@ export function findLocationById(id: string): CaseLocation | null {
 }
 
 export function navigateTo(viewName: ViewName): void {
+  var  debugView = viewName ;
+  console.log("navigating to", debugView)
   window.location.hash = viewName;
 }
