@@ -12,8 +12,7 @@ import { loadAllData } from "./js/data.js";
 
 import {
   loadBookmarksFromStorage,
-  loadNotesFromStorage,
-  loadNoteAsync
+  loadNotesFromStorage
 } from "./js/storage.js";
 
 import { setupEventListeners } from "./js/events.js";
@@ -187,10 +186,6 @@ function initApp() {
     renderTimeline: renderTimeline
   }).then(function () {
     handleHashChange();
-
-    loadNoteAsync("E01").then(function (firstNote) {
-      console.log("First note preview:", firstNote);
-    });
   });
 }
 

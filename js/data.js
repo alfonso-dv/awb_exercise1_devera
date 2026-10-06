@@ -128,7 +128,7 @@ async function loadTimelineData(
 
     populateAllDropdowns();
   } catch (err) {
-    console.log("timeline load error", err);
+    console.error("Failed to load timeline.json", err);
   } finally {
     hideLoadingStep();
   }
