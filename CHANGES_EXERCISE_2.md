@@ -218,7 +218,7 @@ entry so ESLint never reports formatting issues that Prettier owns.
 | Script | Command | What it does |
 |---|---|---|
 | `dev` | `vite` | dev server + HMR |
-| `build` | `vite build` (+ type check from Demo 5) | production build into `dist/` |
+| `build` | `npm run typecheck && vite build` (type check added in Demo 5) | production build into `dist/` |
 | `preview` | `vite preview` | serve `dist/` |
 | `lint` | `eslint . --max-warnings 0` | report problems, **fail** on any (also warnings) |
 | `lint:fix` | `eslint . --fix` | apply ESLint's automatic fixes |
@@ -276,3 +276,98 @@ the global binary on `PATH`), but: the version could differ between developers a
 `eslint.config.js` imports `@eslint/js`, `globals` and `eslint-config-prettier` which are resolved
 from the project's `node_modules` and would be missing, and CI (fresh machine, `npm ci`) would not
 have it at all. That's why linters belong in `devDependencies`.
+
+---
+
+# DEMO 5 — TypeScript setup & first conversions
+
+**What I did**
+
+- `npm install -D typescript@~6.0 typescript-eslint vite-plugin-checker`.
+  I pinned TypeScript **6.0**, not the newest 7.x: `typescript-eslint` only supports
+  `typescript >=4.8.4 <6.1.0`, so with 7.x `npm install` would have reported a peer-dependency
+  conflict and the TS lint rules would be unsupported.
+- Moved the modules from `js/` to `src/` (they are now sources for a build, not files served as-is).
+- Converted the three smallest modules: **`src/state.ts`**, **`src/utils.ts`**,
+  **`src/storage.ts`** — no `any` anywhere (also enforced by the ESLint rule
+  `@typescript-eslint/no-explicit-any: error`). `src/types.ts` holds a *first-pass* domain model
+  with only the fields these modules use (completed in Demo 6).
+- Remaining `.js` modules keep working: `allowJs: true` lets TS/Vite import them, `checkJs: false`
+  keeps them out of type checking until they are converted.
+- Imports use explicit `.ts` extensions (`allowImportingTsExtensions`), which Vite resolves
+  directly — also from the not-yet-converted `.js` files.
+
+Before annotating, `tsc` reported 14 errors, all `TS7006: Parameter 'x' implicitly has an 'any'
+type` (e.g. `formatDate(ts)`, `findEvidenceById(id)`, `saveNoteForEvidence(evidenceId, text)`).
+
+**`tsconfig.json` choices**
+
+| Setting | Value | Why |
+|---|---|---|
+| `strict` | **on** | New code base, no legacy TS to keep compiling — get every safety check from day one; turning it on later is much harder. |
+| `noUnusedLocals` / `noUnusedParameters` | on | Dead code from Exercise 1 refactors shows up immediately. |
+| `noImplicitReturns`, `noFallthroughCasesInSwitch` | on | Cheap, catch real logic mistakes. |
+| `noUncheckedIndexedAccess` | **off** (deliberately) | Would type every `array[i]` / `record[key]` as `T \| undefined`. Most of our code is `for (let i = 0; i < arr.length; i++) arr[i]` where the index is in range, so it would force dozens of pointless checks during the migration. Revisit after converting loops to `for…of`. |
+| `exactOptionalPropertyTypes` | off | Too pedantic for JSON-shaped data at this stage. |
+| `noEmit`, `isolatedModules`, `verbatimModuleSyntax`, `erasableSyntaxOnly` | on | Vite (not `tsc`) produces the JS by stripping types file-by-file; these make sure every file *can* be transpiled in isolation (type-only imports must say `import type`, no `enum`/`namespace` which need real code generation). |
+| `allowJs` / `checkJs` | on / off | Gradual migration. |
+
+**Type errors in the tooling, not just the editor**
+
+- `npm run typecheck` → `tsc -p tsconfig.json && tsc -p tsconfig.node.json` (app + `vite.config.ts`).
+- `npm run build` → `npm run typecheck && vite build`: a type error **stops the build** (Vite on
+  its own only strips types and would happily build broken code).
+- `npm run dev` → `vite-plugin-checker` runs `tsc --watch` in the background and prints errors in
+  the terminal + shows an overlay in the browser.
+
+Demo: adding `const pageCount: number = state.currentPage;` to `navigateTo` →
+
+```
+src/utils.ts(92,9): error TS2322: Type 'string' is not assignable to type 'number'.
+src/utils.ts(92,9): error TS6133: 'pageCount' is declared but its value is never read.
+```
+
+in `npm run build` (build aborted), and `ERROR(TypeScript)` + overlay in `npm run dev`.
+
+## Questions
+
+### What does `strict` turn on?
+
+It is a shorthand for a family of flags (and any future strict flags): `noImplicitAny`,
+`strictNullChecks`, `strictFunctionTypes`, `strictBindCallApply`, `strictPropertyInitialization`,
+`noImplicitThis`, `useUnknownInCatchVariables`, `alwaysStrict`, `strictBuiltinIteratorReturn`.
+The two that mattered most here:
+
+- **`noImplicitAny`** — produced all 14 initial errors: an unannotated parameter is an error
+  instead of silently becoming `any`.
+- **`strictNullChecks`** — `null`/`undefined` are their own types. `findEvidenceById()` returns
+  `Evidence | null`, so every caller must handle "not found"; `document.getElementById()` returns
+  `HTMLElement | null` (this drives most of Demo 7).
+
+I kept it on (see table above).
+
+### Compile-time type errors vs the runtime bugs from Exercise 1 — could TS have caught them?
+
+A type error is found by *reading the code* (static analysis) before it runs; a runtime bug only
+shows up when a specific execution happens. Exercise 1 bugs:
+
+- **Promise bug (Demo 3):** `const firstNote = loadNoteAsync("E01")` then using `firstNote` as a
+  string — **yes**: `loadNoteAsync` returns `Promise<string>`, so passing it where a `string` is
+  expected (e.g. `textarea.value = firstNote`) is a compile error.
+- **Reference/mutation bug (Demo 2):** `filteredEvidence = allEvidence` then `.sort()` — **no**:
+  both are `Evidence[]`, aliasing is perfectly well-typed. (Declaring `allEvidence` as
+  `readonly Evidence[]` *would* make `.sort()` on it an error — but only if you think of it.)
+- **Silent console-only bug:** depends on the bug; logic errors with correct types (wrong
+  condition, wrong comparison value) are invisible to the type checker.
+
+TypeScript catches *shape* mistakes (wrong type, missing property, possibly `null`, unawaited
+Promise), not *logic* mistakes.
+
+### What does `any` do, and why avoid it?
+
+`any` switches type checking **off** for that value and everything derived from it: any property
+access, call or assignment is allowed, and it spreads (`const x = anyValue.foo` is `any` too).
+Using it to silence the 14 errors would have meant the converted modules give the rest of the app
+*no* guarantees — the migration would just be renamed files. Where a value really is unknown
+(`JSON.parse` of `localStorage`), I used **`unknown`** instead, which forces a check before use
+(`isStringRecord()` in `storage.ts`).

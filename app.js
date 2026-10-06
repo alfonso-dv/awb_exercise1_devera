@@ -4,18 +4,18 @@ import "./styles.css";
 
 // GLOBAL STATE IN state.js
 
-import { state } from "./js/state.js";
+import { state } from "./src/state.ts";
 
-import { navigateTo } from "./js/utils.js";
+import { navigateTo } from "./src/utils.ts";
 
-import { loadAllData } from "./js/data.js";
+import { loadAllData } from "./src/data.js";
 
 import {
   loadBookmarksFromStorage,
   loadNotesFromStorage
-} from "./js/storage.js";
+} from "./src/storage.ts";
 
-import { setupEventListeners } from "./js/events.js";
+import { setupEventListeners } from "./src/events.js";
 
 import {
   renderDashboard,
@@ -33,7 +33,7 @@ import {
   renderTimeline,
   renderWorkspace,
   saveHypothesis
-} from "./js/render.js";
+} from "./src/render.js";
 
 // IMPORTS THE REFACTORED CODE FROM MODULES
 

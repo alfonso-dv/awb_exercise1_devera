@@ -21,7 +21,7 @@ The project is managed with **npm** and built with **Vite**. You need Node.js 22
 ```bash
 npm ci            # install exact versions from package-lock.json
 npm run dev       # Vite dev server with HMR (http://localhost:5173)
-npm run build     # production build into dist/
+npm run build     # type-check (tsc) + production build into dist/
 npm run preview   # serve the built dist/ locally
 ```
 

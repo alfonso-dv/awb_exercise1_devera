@@ -1,4 +1,4 @@
-import { state, STORAGE_KEY_HYPOTHESIS } from "./state.js";
+import { state, STORAGE_KEY_HYPOTHESIS } from "./state.ts";
 
 import {
   evidenceMentionsPerson,
@@ -10,13 +10,13 @@ import {
   findPersonById,
   findLocationById,
   navigateTo
-} from "./utils.js";
+} from "./utils.ts";
 
 import {
   saveBookmarksToStorage,
   saveNoteForEvidence,
   loadNoteForEvidence
-} from "./storage.js";
+} from "./storage.ts";
 
 export function renderDashboard() {
   const container = document.getElementById("dashboardContent");
