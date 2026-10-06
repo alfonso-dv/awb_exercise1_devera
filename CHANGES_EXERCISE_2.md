@@ -203,3 +203,76 @@ HTML/data after a deployment (broken), or manually adding `?v=2` query strings.
   (there have been real CVEs where the dev server could be tricked into serving arbitrary files).
 - It needs a Node process running permanently, while `dist/` is just static files any CDN or
   static host (GitHub Pages) can serve cheaply and reliably.
+
+---
+
+# DEMO 4 — `package.json` scripts: lint & format
+
+**Tools:** ESLint 10 (flat config, `eslint.config.js`) with `@eslint/js` recommended rules plus
+`eqeqeq`, `no-var`, `prefer-const`, `no-console` (warn, `console.warn/error` allowed);
+Prettier 3 (`.prettierrc.json`, `.prettierignore`); `eslint-config-prettier` as the **last** config
+entry so ESLint never reports formatting issues that Prettier owns.
+
+**Scripts**
+
+| Script | Command | What it does |
+|---|---|---|
+| `dev` | `vite` | dev server + HMR |
+| `build` | `vite build` (+ type check from Demo 5) | production build into `dist/` |
+| `preview` | `vite preview` | serve `dist/` |
+| `lint` | `eslint . --max-warnings 0` | report problems, **fail** on any (also warnings) |
+| `lint:fix` | `eslint . --fix` | apply ESLint's automatic fixes |
+| `format` | `prettier . --write` | rewrite files in Prettier style |
+| `format:check` | `prettier . --check` | only report unformatted files (for CI) |
+
+**Commits to show live**
+
+1. `EX2 DEMO 4: Add ESLint and Prettier…` — `npm run lint` **fails**:
+   ```
+   app.js       192:7  warning  Unexpected console statement  no-console
+   js/data.js   131:5  warning  Unexpected console statement  no-console
+   js/events.js  13:7  warning  Unexpected console statement  no-console
+   ESLint found too many warnings (maximum: 0).
+   ```
+   Real findings: debug `console.log`s left over from Exercise 1 (a nav click logger that did
+   nothing else, the "First note preview" log, and a timeline load *error* logged with `log`).
+2. `EX2 DEMO 4: Fix lint findings…` — removed the debug logs, timeline error → `console.error`.
+3. `EX2 DEMO 4: Apply Prettier formatting` — `npm run format` changed 10 files
+   (`render.js`: 1118 lines changed, e.g. the artificially wrapped
+   `import {\n  state,\n  STORAGE_KEY_HYPOTHESIS\n} from "./state.js";` → one line).
+
+**`lint:fix` live:** change `const s = (status || "")…` in `js/utils.js` to `let` → `npm run lint`
+reports `'s' is never reassigned. Use 'const' instead  prefer-const` → `npm run lint:fix` rewrites
+it back to `const`.
+
+## Questions
+
+### Linter vs formatter
+
+A **formatter** only changes *how code looks* (whitespace, line breaks, quotes, trailing commas)
+and never its meaning; it has no opinion on whether code is correct. A **linter** analyses *what
+the code does* and finds likely bugs / bad practices (unused variables, `==` instead of `===`,
+`var`, unreachable code, leftover `console.log`) — some auto-fixable, many not.
+Concrete findings here: ESLint → `no-console` in `js/events.js` (debug logging left in);
+`prefer-const` (see above). Prettier → `js/render.js` was reflowed (imports and expressions
+artificially split over many lines were joined to fit the 80-column width), `index.html`
+re-indented.
+
+### Why `lint` and `lint:fix` separately?
+
+Auto-fixing *modifies files*. In CI (Demo 8) we must only **check** — a CI job that fixed and then
+passed would hide the problem and the fix would never reach the repository. Also locally, you
+sometimes want to see the list of problems first (some "fixes" change behaviour, e.g. removing an
+unused variable that was actually meant to be used), review them, and commit fixes deliberately.
+The non-fixing version is also what a pre-commit hook or PR check should run.
+
+### What does `npm run lint` actually do?
+
+npm reads `scripts.lint` from `package.json` and runs that string in a shell, after **prepending
+`node_modules/.bin` to `PATH`**. `eslint` there is a symlink installed by `npm install` that points
+to the project's own ESLint version. So it uses exactly the version from the lockfile — not a
+global one. If ESLint were only installed globally it would *still* run (the shell would find
+the global binary on `PATH`), but: the version could differ between developers and CI,
+`eslint.config.js` imports `@eslint/js`, `globals` and `eslint-config-prettier` which are resolved
+from the project's `node_modules` and would be missing, and CI (fresh machine, `npm ci`) would not
+have it at all. That's why linters belong in `devDependencies`.
