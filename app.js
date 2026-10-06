@@ -1,3 +1,7 @@
+// Importing the stylesheet through the module graph lets Vite hot-swap CSS (HMR)
+// and bundle/minify it for production.
+import "./styles.css";
+
 // GLOBAL STATE IN state.js
 
 import { state } from "./js/state.js";

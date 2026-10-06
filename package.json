@@ -1,16 +1,22 @@
 {
-  "name": "mystery-road-awe-2026",
+  "name": "project-remotion-investigation-portal",
   "version": "1.0.0",
-  "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
-  "main": "app.js",
+  "private": true,
+  "description": "Project ReMotion – browser-based investigation portal for the failure of an AI-assisted rehabilitation robot (AWE Exercise 2).",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alfonso-dv/awb_exercise1_devera.git"
   },
-  "author": "",
+  "author": "Anton Miguel de Vera",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/alfonso-dv/awb_exercise1_devera/issues"

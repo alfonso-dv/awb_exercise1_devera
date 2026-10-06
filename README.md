@@ -16,24 +16,17 @@ during the course will be to analyse, maintain, refactor, migrate, and extend it
 
 ## Running the application
 
-This application uses `fetch()` to load its case data from local JSON files, so it must be served
-over HTTP — opening `index.html` directly from the filesystem (`file://`) will not work in most
-browsers.
-
-Any static file server will do. For example, from the project root:
+The project is managed with **npm** and built with **Vite**. You need Node.js 22.12+ (see `.nvmrc`).
 
 ```bash
-# Python 3
-python -m http.server 8080
-
-# Node.js (no install required)
-npx serve .
-
-# VS Code
-# Use the "Live Server" extension
+npm ci            # install exact versions from package-lock.json
+npm run dev       # Vite dev server with HMR (http://localhost:5173)
+npm run build     # production build into dist/
+npm run preview   # serve the built dist/ locally
 ```
 
-Then open `http://localhost:8080` (or whatever port your server prints) in your browser.
+Static files that are fetched at runtime (`data/*.json`, person avatars) live in `public/` and are
+copied unchanged into `dist/`.
 
 ## Features
 
