@@ -6,8 +6,19 @@ import type {
   TimelineEvent
 } from "./types.ts";
 
-export type ViewName =
-  "dashboard" | "evidence" | "people" | "timeline" | "workspace";
+export const VIEW_NAMES = [
+  "dashboard",
+  "evidence",
+  "people",
+  "timeline",
+  "workspace"
+] as const;
+
+export type ViewName = (typeof VIEW_NAMES)[number];
+
+export function isViewName(value: string): value is ViewName {
+  return (VIEW_NAMES as readonly string[]).includes(value);
+}
 
 export type PeopleTab = "people" | "locations";
 

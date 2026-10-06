@@ -75,7 +75,9 @@ export async function loadAllData({
     renderEvidenceList
   );
 
-  loadTimelineData(renderDashboard, populateAllDropdowns, renderTimeline);
+  // Deliberately not awaited: the timeline loads in the background while the
+  // app is already usable. loadTimelineData() handles its own errors.
+  void loadTimelineData(renderDashboard, populateAllDropdowns, renderTimeline);
 }
 
 function showLoadingOverlay(msg: string): void {

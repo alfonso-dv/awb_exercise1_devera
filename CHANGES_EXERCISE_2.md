@@ -460,3 +460,83 @@ because they're shown by name.
 I used **`interface` for the object models** (`Person`, `Evidence extends Omit<RawEvidence,
 "personIds">`, …) and **`type` for unions and aliases**. For this app it doesn't matter
 functionally — it's a consistency convention.
+
+---
+
+# DEMO 7 — Full migration & resolving type errors
+
+**What I did**
+
+- Converted the rest: `src/render.js` → `render.ts`, `src/events.js` → `events.ts`,
+  `app.js` → **`src/main.ts`** (`index.html` now loads `<script type="module" src="src/main.ts">`).
+- Removed `allowJs` from `tsconfig.json` — there is no JavaScript left in `src/`.
+- New `src/dom.ts`: `getElement(id, HTMLSelectElement)` / `findElement(...)` / `selectValue(id)`.
+  They check at runtime that the element exists **and** has the expected type (`instanceof`), so
+  callers get e.g. an `HTMLSelectElement` with `.value` — no `any`, no `!`, no blind `as` casts.
+- Turned on **type-aware linting** (`tseslint.configs.recommendedTypeChecked`): rules such as
+  `no-floating-promises` and `no-unsafe-*` need the type checker and catch things `tsc` alone
+  does not.
+- Result: `npm run typecheck` → **0 errors**, `npm run lint` → 0 problems, under the Demo 5
+  strictness settings.
+
+Just renaming the files produced **161 errors**:
+
+| Code | Count | Meaning |
+|---|---|---|
+| TS2339 | 51 | property doesn't exist — `.value` on `HTMLElement`, `.getAttribute` on `EventTarget`, `window.navigateTo` |
+| TS2531 / TS18047 | 76 | object is possibly `null` (`getElementById`, `e.target`) |
+| TS7006 / TS7031 | 23 | implicit `any` parameters |
+| TS2362 / TS2363 | 6 | arithmetic on `Date` objects |
+| TS18046 | 1 | `resolvedTerm` is `unknown` |
+| TS2322 / TS2345 | 2 | `string` not assignable to `ViewName`; `string \| null` passed as `string` |
+
+**Behaviour check:** the scripted walkthrough (all views, filters, search, detail, notes, status,
+bookmarks, people/locations, timeline + modal, workspace + hypothesis persistence) gives identical
+results to the original JS version, both on `npm run dev` and on the built `npm run preview`.
+
+**Spots I actually had to think about**
+
+| # | Where | Compiler said | Verdict |
+|---|---|---|---|
+| 1 | `main.ts` startup: `loadAllData({...}).then(handleHashChange)` | `no-floating-promises` (type-aware lint) | **Real bug.** No `.catch`: if `case.json`/`people.json`/`locations.json` fail, the rejection is unhandled and the "Loading case file…" spinner stays **forever**. Verified in the browser by making `people.json` return HTTP 500: old JS → endless spinner + uncaught error; now → error logged and message "The case file could not be loaded. Please reload the page." |
+| 2 | `loadHypothesisFromStorage()` | *nothing* at first — `JSON.parse()` returns `any`, so `draft.confidence` etc. were completely unchecked | **Real bug.** After typing the draft (`HypothesisDraft`) and parsing as `unknown`: `JSON.parse` of a corrupt `remotion_hypothesis` entry **threw** and broke the Workspace view (verified: 2 uncaught errors in the old version). Now `parseHypothesisDraft()` validates and falls back to an empty form. |
+| 3 | same function: `hypConfidence.value = draft.confidence \|\| 50` | TS2322 `number` is not assignable to `string` | **Pedantic.** The DOM converts `50` to `"50"`. Fixed with `"50"` and documented that the stored value is a string. |
+| 4 | `saveCurrentNote()`: `saveNoteForEvidence(textarea.getAttribute("data-evidence-id"), text)` | TS2345 `string \| null` not assignable to `string` | **Latent bug** (can't happen with today's markup): a missing attribute would save the note under the key `"null"`. Now returns early. |
+| 5 | `handleHashChange()`: `if (validViews.indexOf(hash) === -1) hash = "dashboard"; state.currentPage = hash;` | TS2322 `string` not assignable to `ViewName` | **Pedantic but useful.** The JS logic was correct, but `indexOf` doesn't narrow types. Replaced with a type guard `isViewName(value): value is ViewName` derived from one `VIEW_NAMES` list. |
+| 6 | sorting: `new Date(a.timestamp) - new Date(b.timestamp)` | TS2362/2363 arithmetic on `Date` | **Pedantic.** JS calls `valueOf()` implicitly. Made explicit with `.getTime()`. |
+| 7 | `simulateAsyncSearch()` → `resolvedTerm` is `unknown` | TS18046 | **Pedantic/missing annotation.** `new Promise(resolve => …)` can't infer the value type; declared `Promise<string>`. |
+| 8 | event handlers: `e.target.getAttribute(...)` | TS2339 / possibly `null` | **Mostly pedantic**, but it showed the fragility: `e.target` is the *innermost* element clicked (the bookmark button contains a `<span>` — it only works because of `pointer-events: none` in the CSS). I now use the button the listener was attached to (closure / `dataset`) or check `instanceof HTMLElement`. |
+
+## Questions
+
+### One type error I actually had to think about
+
+`loadHypothesisFromStorage()` (#2/#3 above). Interestingly it showed **no error at all** until I
+asked "what type is `draft`?" — `JSON.parse` returns `any`, which silently disabled checking for
+the entire function. Typing it as `unknown` forced me to write down the real shape
+(`HypothesisDraft`) and to handle "what if the stored value isn't that shape?" — which is exactly
+the case that crashed the Workspace view for a corrupt localStorage entry. Plain JS review didn't
+notice because the happy path always worked, and testing never used corrupt storage.
+
+### When is `any` the right call during a migration?
+
+Rarely, and only temporarily: e.g. for a huge legacy module you can't convert yet, at the boundary
+to an untyped third-party library, or to get a first compile so the rest can be migrated — always
+marked (`// TODO(types)`) and tracked. It's a smell when it's used to silence an error you don't
+understand, for data you *could* describe (our JSON files), or for DOM elements (use the specific
+element type). My line: **never `any` in this app** (`no-explicit-any` is an ESLint *error*); for
+genuinely unknown input use `unknown` + a check; for "TypeScript can't know the HTML" use a
+runtime-checked helper (`getElement`). The only assertions left are `fetchJson`'s `as T` (data
+files we control, documented in Demo 6) and `parsed as Record<string, unknown>` right after an
+`object`/`null` check.
+
+### Did the migration reveal genuine bugs?
+
+Yes, two real ones (both reproduced against the original JS in the browser, both fixed):
+1. **Infinite loading spinner** when the core data fails to load (unhandled Promise rejection).
+2. **Workspace crash** on a corrupt hypothesis draft in localStorage (`JSON.parse` throws).
+
+Plus one latent one (note saved under `"null"` if the attribute were missing). The rest (Date
+arithmetic, `ViewName`, `50` vs `"50"`, null checks on elements that always exist) were noise — I'm
+confident because each of those spots behaves the same in JS at runtime (implicit conversion /
+the elements are in `index.html`), which the identical before/after walkthrough confirms.

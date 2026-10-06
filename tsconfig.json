@@ -23,11 +23,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": false,
-    "exactOptionalPropertyTypes": false,
-
-    /* Migration: let not-yet-converted .js modules be imported, but don't type-check them. */
-    "allowJs": true,
-    "checkJs": false
+    "exactOptionalPropertyTypes": false
   },
-  "include": ["src", "app.js"]
+  "include": ["src"]
 }
