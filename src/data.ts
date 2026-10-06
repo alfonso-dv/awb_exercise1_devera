@@ -24,7 +24,7 @@ export interface DataLoadCallbacks {
  * `res.json()` returns whatever is in the file. A malformed JSON file would
  * still type-check here and only fail later at runtime.
  */
-async function fetchJson<T>(url: string): Promise<T> {
+export async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
 
   if (!res.ok) {

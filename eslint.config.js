@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import reactHooks from "eslint-plugin-react-hooks";
 import prettier from "eslint-config-prettier";
 import { defineConfig } from "eslint/config";
 
@@ -31,6 +32,11 @@ export default defineConfig([
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-non-null-assertion": "warn"
     }
+  },
+  {
+    // Rules of Hooks + correct effect dependencies for React components.
+    files: ["src/react/**/*.tsx", "src/react/**/*.ts"],
+    extends: [reactHooks.configs.flat.recommended]
   },
   {
     // Tooling config files run in Node and aren't part of the app's tsconfig.

@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["vite/client"],
+    "jsx": "react-jsx",
 
     /* Vite does the transpiling; tsc only type-checks. */
     "noEmit": true,

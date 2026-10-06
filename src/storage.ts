@@ -15,19 +15,24 @@ export function saveBookmarksToStorage(): void {
   localStorage.setItem(STORAGE_KEY_BOOKMARKS, JSON.stringify(state.bookmarks));
 }
 
-export function loadBookmarksFromStorage(): void {
+/** Reads the bookmarked evidence ids from localStorage (no side effects). */
+export function readStoredBookmarks(): string[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_BOOKMARKS);
     const parsed: unknown = raw ? JSON.parse(raw) : [];
 
-    state.bookmarks = Array.isArray(parsed)
+    return Array.isArray(parsed)
       ? parsed.filter((id): id is string => typeof id === "string")
       : [];
   } catch (err) {
     console.warn("Could not read stored bookmarks, starting empty", err);
 
-    state.bookmarks = [];
+    return [];
   }
+}
+
+export function loadBookmarksFromStorage(): void {
+  state.bookmarks = readStoredBookmarks();
 }
 
 export function saveNoteForEvidence(evidenceId: string, text: string): void {
