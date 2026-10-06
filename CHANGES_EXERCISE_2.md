@@ -137,3 +137,69 @@ transforms it individually. With explicit `import`/`export`, Vite knows the exac
 original single `<script>` relied on globals and implicit load order, which a bundler cannot
 analyse (it would have to treat the whole file as one opaque blob, and nothing could be swapped
 independently).
+
+---
+
+# DEMO 3 — Production build & preview
+
+`npm run build` (→ `vite build`) output:
+
+```
+dist/index.html                 11.04 kB │ gzip: 2.98 kB
+dist/assets/index-ZAWMSz9M.css  11.44 kB │ gzip: 2.77 kB
+dist/assets/index-Dm5yUGRh.js   24.26 kB │ gzip: 6.46 kB
+```
+
+`dist/` also contains `data/*.json` and `assets/people/*.png`, copied 1:1 from `public/`.
+
+`npm run preview` (→ `vite preview`) serves `dist/`. The same scripted walkthrough as in Demo 2
+gave identical results against the built output.
+
+**Source vs. built output**
+
+| | Dev (source) | Production (`dist/`) |
+|---|---|---|
+| JS | 7 files (`app.js` + `js/*.js`), 48,040 bytes, readable, comments | **1 file** `index-<hash>.js`, 24.26 kB, a single line |
+| CSS | `styles.css`, 14,534 bytes, formatted | `index-<hash>.css`, 11.44 kB, a single line |
+| Logo | `assets/logo/logo.svg` (separate request) | inlined into `index.html` as a `data:` URI (it is < 4 KB, Vite's `assetsInlineLimit`) |
+| `index.html` | `<script type="module" src="app.js">` | `<script type="module" crossorigin src="./assets/index-<hash>.js">` + a `<link rel="stylesheet">` for the extracted CSS |
+
+Example — `getStatusBadgeClass` in `js/utils.js` (11 lines with `if`s) becomes:
+
+```js
+...`badge-reviewed`:t===`flagged`?`badge-flagged`:`badge-unreviewed`},s=e=>(e||``).toLowerCase()===`relevant`?...
+```
+
+local names shortened (`status` → `t`), `if`/`return` turned into ternaries, whitespace and
+comments removed, the export/import boundaries gone because everything is in one scope.
+
+## Questions
+
+### Three concrete transformations Vite applied
+
+1. **Bundling:** 7 ES modules → one JS file; `import`/`export` between them are resolved at build
+   time, so the browser makes 1 request instead of 7 (sequential) ones.
+2. **Minification:** whitespace/comments removed, identifiers renamed, control flow rewritten
+   (`if` → ternary, `true` → `!0`); 48 kB → 24 kB JS, CSS 14.5 kB → 11.4 kB.
+3. **Content-hashed filenames:** `index-Dm5yUGRh.js`, `index-ZAWMSz9M.css`, and `index.html`
+   rewritten to point to them.
+4. **CSS extraction:** the CSS that was `import`ed from JS is pulled out into its own `.css` file
+   and linked from `index.html` (in dev it was injected by JS).
+5. **Asset inlining:** the small logo SVG was turned into a `data:` URI.
+
+### Why do production filenames include a content hash?
+
+So they can be cached **forever** (`Cache-Control: immutable`, long `max-age`). The hash is derived
+from the file contents: when the code changes, the filename changes, `index.html` references the
+new name and browsers fetch it; when it doesn't change, the cached copy keeps being used. Without
+hashes you have to choose between short cache times (slow) and users running stale JS against new
+HTML/data after a deployment (broken), or manually adding `?v=2` query strings.
+
+### Why never deploy the dev server to users?
+
+- It is not optimised: unbundled, unminified, one request per module, transforms on every request.
+- It injects the HMR client and WebSocket — useless for users, extra attack surface.
+- It exposes source files and its file system access is designed for a trusted local developer
+  (there have been real CVEs where the dev server could be tricked into serving arbitrary files).
+- It needs a Node process running permanently, while `dist/` is just static files any CDN or
+  static host (GitHub Pages) can serve cheaply and reliably.
