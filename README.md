@@ -25,6 +25,10 @@ npm run build     # type-check (tsc) + production build into dist/
 npm run preview   # serve the built dist/ locally
 ```
 
+During the React migration there are two pages: `index.html` is the complete vanilla TypeScript
+app, and `react.html` is the React version (application shell + Dashboard so far; the other views
+link back to the vanilla app).
+
 Static files that are fetched at runtime (`data/*.json`, person avatars) live in `public/` and are
 copied unchanged into `dist/`.
 
