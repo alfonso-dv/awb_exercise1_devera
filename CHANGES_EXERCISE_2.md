@@ -371,3 +371,92 @@ Using it to silence the 14 errors would have meant the converted modules give th
 *no* guarantees — the migration would just be renamed files. Where a value really is unknown
 (`JSON.parse` of `localStorage`), I used **`unknown`** instead, which forces a check before use
 (`isStringRecord()` in `storage.ts`).
+
+---
+
+# DEMO 6 — Typing the domain data
+
+**What I did**
+
+- `src/types.ts`: interfaces for every JSON file — `CaseInfo` (case.json), `Person`
+  (people.json), `CaseLocation` (locations.json), `RawEvidence` / `Evidence` (evidence.json),
+  `TimelineEvent` + `Certainty` union (timeline.json). Small aliases (`PersonId`, `LocationId`,
+  `EvidenceId`, `IsoTimestamp`) document what each `string` means.
+- `src/data.js` → **`src/data.ts`**: one generic `fetchJson<T>(url): Promise<T>` replaces the
+  untyped `fetch().json()` calls, so `state.allPeople = await fetchJson<Person[]>(…)` is checked
+  against `AppState`. It now also checks `res.ok` (before, a 404 page would have been passed to
+  `.json()` and failed with a confusing parse error).
+- Callback parameters of `loadAllData` are typed (`DataLoadCallbacks`).
+
+I checked the real data first (script over all JSON files: which keys exist, which value types,
+which distinct values) — all fields are always present, but several *values* are inconsistent:
+
+| Field | Values found |
+|---|---|
+| `evidence.personIds` | ids like `"nova-byte"` **and** the display name `"Nova Byte"` (E04) |
+| `evidence.status` | `"unreviewed"`, `"Reviewed"` |
+| `evidence.relevance` | `"unknown"`, `"Unknown"` |
+| `evidence.type` | `"test-report"` and `"Test-Report"` |
+| `evidence.timestamp` | E08 is `2024-10-15…`, everything else 2026 |
+
+**The ambiguous field: `evidence.personIds`**
+
+The JS version never decided what an entry is. `evidenceMentionsPerson()` matched **both**
+`person.id` and `person.name`, and the detail view fell back to printing the raw string when the
+id lookup failed — so `"Nova Byte"` happened to work in both places.
+
+When writing `personIds: PersonId[]` the type would have been a lie for E04, and writing
+`personIds: string[] // id or name` would push the "which one is it?" check into every consumer
+(filter, detail view, people counts, and any future code). I decided:
+
+- **The app's model has exactly one meaning: a person *id*.** `RawEvidence.personIds` (the file
+  format: "id or display name") is a separate type from `Evidence.personIds` (`PersonId[]`).
+- The conversion happens in **one** place: `normalizeEvidence()` in `data.ts` resolves each
+  reference by id, then by name, and warns about unknown references.
+- `evidenceMentionsPerson()` became `ev.personIds.includes(person.id)`.
+
+Behaviour is identical (Nova Byte's filter still shows 5 items incl. E04, E04's detail still lists
+"Nova Byte"), but the "or name" case now exists in exactly one function instead of being an
+implicit rule everywhere.
+
+`status`/`relevance` are the second candidate: a union `"unreviewed" | "reviewed" | "flagged"`
+would be the right model, but the UI currently *displays* the raw value (`Reviewed` with a
+capital R), so normalising would change what users see. I kept them as `string` with a comment
+("compared case-insensitively") and left that as a deliberate follow-up.
+
+## Questions
+
+### Walk through the ambiguous field
+
+See above. JS "got away with it" because a `string` is a `string`: `indexOf(person.id) !== -1 ||
+indexOf(person.name) !== -1` silently accepted both shapes, and the fallback `person ? person.name
+: ev.personIds[p]` printed the raw value. Nobody had to write down what the field means.
+TypeScript forced me to *name* the element type; there was no honest single type for the raw data,
+so I had to choose: either model the union of meanings and handle it at every use, or convert once
+at the boundary. I chose to convert once at the boundary (load time) and keep the in-app type
+strict.
+
+### A data-shape problem TypeScript can't catch on its own
+
+Yes — everything that comes from `fetch()`: `fetchJson<Evidence[]>` is an *assertion*; TypeScript
+cannot see the JSON file. If `evidence.json` had `"tags": "critical"` (string instead of array) or a
+missing `locationIds`, it would compile fine and crash at runtime in `item.tags.join(" ")`.
+The same for values: the E08 timestamp with year **2024** instead of 2026, `"Test-Report"` vs
+`"test-report"` and `"Nova Byte"` are all valid `string`s. (`JSON.parse` of localStorage is the
+same problem — that's why `storage.ts` treats it as `unknown`.)
+To catch that you need **runtime validation** at the boundary: hand-written type guards
+(`function isEvidence(x: unknown): x is RawEvidence`), or a schema library like **Zod/Valibot**
+where you define the schema once, derive the TS type from it (`z.infer<typeof EvidenceSchema>`)
+and `parse()` the fetched data. Plus tests / a JSON Schema check in CI for the data files.
+
+### `interface` vs `type` alias
+
+Both can describe an object shape and are interchangeable for most uses. Differences: `interface`
+can be **extended** with `extends` and is **open** (declaration merging — declaring it twice adds
+fields, used e.g. to extend `Window`); `type` can express things interfaces can't: unions
+(`Certainty = "confirmed" | "reported" | "contradictory"`), mapped/conditional types, tuples,
+aliases of primitives (`PersonId = string`). Error messages for interfaces are often shorter
+because they're shown by name.
+I used **`interface` for the object models** (`Person`, `Evidence extends Omit<RawEvidence,
+"personIds">`, …) and **`type` for unions and aliases**. For this app it doesn't matter
+functionally — it's a consistency convention.

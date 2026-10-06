@@ -8,7 +8,7 @@ import { state } from "./src/state.ts";
 
 import { navigateTo } from "./src/utils.ts";
 
-import { loadAllData } from "./src/data.js";
+import { loadAllData } from "./src/data.ts";
 
 import {
   loadBookmarksFromStorage,

@@ -1,13 +1,10 @@
 import { state, type ViewName } from "./state.ts";
 import type { CaseLocation, Evidence, Person } from "./types.ts";
 
+// Person references are normalised to ids when evidence is loaded (see
+// normalizeEvidence in data.ts), so matching by name is no longer needed.
 export function evidenceMentionsPerson(ev: Evidence, person: Person): boolean {
-  if (!ev.personIds) return false;
-
-  return (
-    ev.personIds.indexOf(person.id) !== -1 ||
-    ev.personIds.indexOf(person.name) !== -1
-  );
+  return ev.personIds.includes(person.id);
 }
 
 export function formatDate(ts: string | undefined): string {
