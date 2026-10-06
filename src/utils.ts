@@ -1,15 +1,13 @@
-import { state } from "./state.js";
+import { state, type ViewName } from "./state.ts";
+import type { CaseLocation, Evidence, Person } from "./types.ts";
 
-export function evidenceMentionsPerson(ev, person) {
-  if (!ev.personIds) return false;
-
-  return (
-    ev.personIds.indexOf(person.id) !== -1 ||
-    ev.personIds.indexOf(person.name) !== -1
-  );
+// Person references are normalised to ids when evidence is loaded (see
+// normalizeEvidence in data.ts), so matching by name is no longer needed.
+export function evidenceMentionsPerson(ev: Evidence, person: Person): boolean {
+  return ev.personIds.includes(person.id);
 }
 
-export function formatDate(ts) {
+export function formatDate(ts: string | undefined): string {
   if (!ts) return "Unknown date";
 
   const d = new Date(ts);
@@ -30,7 +28,7 @@ export function formatDate(ts) {
   );
 }
 
-export const getStatusBadgeClass = (status) => {
+export const getStatusBadgeClass = (status: string | undefined): string => {
   const s = (status || "").toLowerCase();
 
   if (s === "reviewed") return "badge-reviewed";
@@ -39,7 +37,9 @@ export const getStatusBadgeClass = (status) => {
   return "badge-unreviewed";
 };
 
-export const getRelevanceBadgeClass = (relevance) => {
+export const getRelevanceBadgeClass = (
+  relevance: string | undefined
+): string => {
   const r = (relevance || "").toLowerCase();
 
   if (r === "relevant") return "badge-relevant";
@@ -47,7 +47,7 @@ export const getRelevanceBadgeClass = (relevance) => {
   return "badge-unreviewed";
 };
 
-export function certaintyBadgeClass(certainty) {
+export function certaintyBadgeClass(certainty: string): string {
   if (certainty === "confirmed") return "reviewed";
   if (certainty === "contradictory") return "critical";
   if (certainty === "reported") return "flagged";
@@ -55,7 +55,7 @@ export function certaintyBadgeClass(certainty) {
   return "unreviewed";
 }
 
-export function findEvidenceById(id) {
+export function findEvidenceById(id: string): Evidence | null {
   for (let i = 0; i < state.allEvidence.length; i++) {
     if (state.allEvidence[i].id === id) {
       return state.allEvidence[i];
@@ -65,7 +65,7 @@ export function findEvidenceById(id) {
   return null;
 }
 
-export function findPersonById(id) {
+export function findPersonById(id: string): Person | null {
   for (let i = 0; i < state.allPeople.length; i++) {
     if (state.allPeople[i].id === id) {
       return state.allPeople[i];
@@ -75,7 +75,7 @@ export function findPersonById(id) {
   return null;
 }
 
-export function findLocationById(id) {
+export function findLocationById(id: string): CaseLocation | null {
   for (let i = 0; i < state.allLocations.length; i++) {
     if (state.allLocations[i].id === id) {
       return state.allLocations[i];
@@ -85,6 +85,6 @@ export function findLocationById(id) {
   return null;
 }
 
-export function navigateTo(viewName) {
+export function navigateTo(viewName: ViewName): void {
   window.location.hash = viewName;
 }

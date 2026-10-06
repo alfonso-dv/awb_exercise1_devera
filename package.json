@@ -1,22 +1,41 @@
 {
-  "name": "mystery-road-awe-2026",
+  "name": "project-remotion-investigation-portal",
   "version": "1.0.0",
-  "description": "Investigate the failure of an AI-assisted rehabilitation robot.",
-  "main": "app.js",
+  "private": true,
+  "description": "Project ReMotion – browser-based investigation portal for the failure of an AI-assisted rehabilitation robot (AWE Exercise 2).",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alfonso-dv/awb_exercise1_devera.git"
   },
-  "author": "",
+  "author": "Anton Miguel de Vera",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/alfonso-dv/awb_exercise1_devera/issues"
   },
   "homepage": "https://github.com/alfonso-dv/awb_exercise1_devera#readme",
   "devDependencies": {
-    "vite": "^8.3.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.0",
+    "vite-plugin-checker": "^0.14.5"
   }
 }

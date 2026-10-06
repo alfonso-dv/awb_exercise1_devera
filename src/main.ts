@@ -1,18 +1,20 @@
-// GLOBAL STATE IN state.js
+// Importing the stylesheet through the module graph lets Vite hot-swap CSS (HMR)
+// and bundle/minify it for production.
+import "../styles.css";
 
-import { state } from "./js/state.js";
+// GLOBAL STATE IN state.ts
 
-import { navigateTo } from "./js/utils.js";
+import { state, isViewName, type ViewName } from "./state.ts";
 
-import { loadAllData } from "./js/data.js";
+import { getElement } from "./dom.ts";
 
-import {
-  loadBookmarksFromStorage,
-  loadNotesFromStorage,
-  loadNoteAsync
-} from "./js/storage.js";
+import { navigateTo } from "./utils.ts";
 
-import { setupEventListeners } from "./js/events.js";
+import { loadAllData } from "./data.ts";
+
+import { loadBookmarksFromStorage, loadNotesFromStorage } from "./storage.ts";
+
+import { setupEventListeners } from "./events.ts";
 
 import {
   renderDashboard,
@@ -30,36 +32,28 @@ import {
   renderTimeline,
   renderWorkspace,
   saveHypothesis
-} from "./js/render.js";
+} from "./render.ts";
 
 // IMPORTS THE REFACTORED CODE FROM MODULES
 
 // ---------------------------------------------------------------------
-// DATA LOADING IN data.js
+// DATA LOADING IN data.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// GENERIC LOOKUP HELPERS IN utils.js
+// GENERIC LOOKUP HELPERS IN utils.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// NAVIGATION IN utils.js / HASH ROUTING
+// NAVIGATION IN utils.ts / HASH ROUTING
 // ---------------------------------------------------------------------
 
-function handleHashChange() {
-  let hash = window.location.hash.replace("#", "");
+function handleHashChange(): void {
+  const requested = window.location.hash.replace("#", "");
 
-  const validViews = [
-    "dashboard",
-    "evidence",
-    "people",
-    "timeline",
-    "workspace"
-  ];
-
-  if (validViews.indexOf(hash) === -1) {
-    hash = "dashboard";
-  }
+  // indexOf() on a string list doesn't tell TypeScript that `requested` is a
+  // ViewName; the isViewName() type guard does.
+  const hash: ViewName = isViewName(requested) ? requested : "dashboard";
 
   state.currentPage = hash;
 
@@ -69,45 +63,29 @@ function handleHashChange() {
     sections[i].classList.remove("active");
   }
 
-  document
-    .getElementById("view-" + hash)
-    .classList.add("active");
+  getElement("view-" + hash, HTMLElement).classList.add("active");
 
   const navButtons = document.querySelectorAll(".nav-btn");
 
   for (let n = 0; n < navButtons.length; n++) {
     navButtons[n].classList.remove("active");
 
-    if (
-      navButtons[n].getAttribute("data-view") === hash
-    ) {
+    if (navButtons[n].getAttribute("data-view") === hash) {
       navButtons[n].classList.add("active");
     }
   }
 
-  if (
-    hash === "dashboard" &&
-    !state.viewRendered.dashboard
-  ) {
+  if (hash === "dashboard" && !state.viewRendered.dashboard) {
     renderDashboard();
     state.viewRendered.dashboard = true;
-  } else if (
-    hash === "evidence" &&
-    !state.viewRendered.evidence
-  ) {
+  } else if (hash === "evidence" && !state.viewRendered.evidence) {
     renderEvidenceList();
     state.viewRendered.evidence = true;
-  } else if (
-    hash === "people" &&
-    !state.viewRendered.people
-  ) {
+  } else if (hash === "people" && !state.viewRendered.people) {
     renderPeople();
     renderLocations();
     state.viewRendered.people = true;
-  } else if (
-    hash === "timeline" &&
-    !state.viewRendered.timeline
-  ) {
+  } else if (hash === "timeline" && !state.viewRendered.timeline) {
     renderTimeline();
     state.viewRendered.timeline = true;
   } else if (hash === "workspace") {
@@ -117,40 +95,55 @@ function handleHashChange() {
 }
 
 // ---------------------------------------------------------------------
-// DASHBOARD IN render.js
+// DASHBOARD IN render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// EVIDENCE CATALOGUE IN render.js
+// EVIDENCE CATALOGUE IN render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// EVIDENCE DETAIL in render.js
+// EVIDENCE DETAIL in render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// PEOPLE & LOCATIONS in render.js
+// PEOPLE & LOCATIONS in render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// TIMELINE in render.js
+// TIMELINE in render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// WORKSPACE in render.js
+// WORKSPACE in render.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// LOCAL STORAGE HELPERS (bookmarks & notes) IN storage.js
+// LOCAL STORAGE HELPERS (bookmarks & notes) IN storage.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
-// EVENT LISTENER SETUP in events.js
+// EVENT LISTENER SETUP in events.ts
 // ---------------------------------------------------------------------
 
 // ---------------------------------------------------------------------
 // INLINE HTML HANDLER COMPATIBILITY
 // ---------------------------------------------------------------------
+
+// The onclick="…" attributes in index.html (and in HTML generated by
+// render.ts) look functions up on `window`, so they must be published there.
+// Declaring them on the global Window interface keeps those assignments typed.
+declare global {
+  interface Window {
+    navigateTo: typeof navigateTo;
+    switchPeopleTab: typeof switchPeopleTab;
+    handleSortChange: typeof handleSortChange;
+    saveHypothesis: typeof saveHypothesis;
+    closeEvidenceDetail: typeof closeEvidenceDetail;
+    saveCurrentNote: typeof saveCurrentNote;
+    renderEvidenceList: typeof renderEvidenceList;
+  }
+}
 
 window.navigateTo = navigateTo;
 window.switchPeopleTab = switchPeopleTab;
@@ -164,7 +157,7 @@ window.renderEvidenceList = renderEvidenceList;
 // INIT
 // ---------------------------------------------------------------------
 
-function initApp() {
+function initApp(): void {
   loadBookmarksFromStorage();
   loadNotesFromStorage();
 
@@ -181,13 +174,18 @@ function initApp() {
     applyStoredBookmarkFlags: applyStoredBookmarkFlags,
     renderEvidenceList: renderEvidenceList,
     renderTimeline: renderTimeline
-  }).then(function () {
-    handleHashChange();
+  })
+    .then(function () {
+      handleHashChange();
+    })
+    .catch(function (err: unknown) {
+      // Without this, a failed case/people/locations request was an
+      // unhandled rejection and the loading spinner stayed up forever.
+      console.error("Failed to load the case file", err);
 
-    loadNoteAsync("E01").then(function (firstNote) {
-      console.log("First note preview:", firstNote);
+      getElement("loadingText", HTMLElement).textContent =
+        "The case file could not be loaded. Please reload the page.";
     });
-  });
 }
 
 window.addEventListener("DOMContentLoaded", initApp);
