@@ -1,0 +1,64 @@
+# Deployment workflow: build the app and publish dist/ to GitHub Pages.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Manual "Run workflow" button in the Actions tab (e.g. to redeploy).
+  workflow_dispatch:
+
+# Least privilege: read the code, write to Pages, and request an OIDC token
+# that actions/deploy-pages uses to prove the deployment comes from this repo.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deployments at once; let an in-progress deploy finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Lint, type check & build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version from .nvmrc)
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Check formatting (Prettier)
+        run: npm run format:check
+
+      # `npm run build` = `tsc` type check + `vite build`; a type error stops here.
+      - name: Build (type check + vite build)
+        run: npm run build
+
+      - name: Upload dist/ as the Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

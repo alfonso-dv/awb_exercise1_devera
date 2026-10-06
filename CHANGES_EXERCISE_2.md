@@ -540,3 +540,213 @@ Plus one latent one (note saved under `"null"` if the attribute were missing). T
 arithmetic, `ViewName`, `50` vs `"50"`, null checks on elements that always exist) were noise — I'm
 confident because each of those spots behaves the same in JS at runtime (implicit conversion /
 the elements are in `index.html`), which the identical before/after walkthrough confirms.
+
+---
+
+# DEMO 8 — GitHub Actions: development workflow
+
+File: `.github/workflows/ci.yml`
+
+- **Triggers:** `push` to any branch and `pull_request`.
+- `actions/checkout@v5` → `actions/setup-node@v5` with `node-version-file: .nvmrc` (Node 22, same
+  as locally) and **`cache: npm`** → `npm ci` → `npm run lint` → `npm run format:check` →
+  `npm run typecheck`.
+- `permissions: contents: read` (it never writes) and `concurrency` with `cancel-in-progress`
+  (a newer push to the same branch cancels the outdated run).
+
+**Failing → passing (Actions tab, workflow "CI"):**
+
+1. `EX2 DEMO 8: Add CI workflow…` — run #1 ✅
+2. `EX2 DEMO 8: Deliberately break lint and formatting` — added
+   `var  debugView = viewName ;` + `console.log(...)` to `navigateTo()` → run #2 ❌, fails in the
+   step **"Lint (ESLint)"**: `89:3 error Unexpected var, use let or const instead (no-var)`,
+   `90:3 warning Unexpected console statement (no-console)`. Later steps are skipped.
+3. `EX2 DEMO 8: Fix lint and formatting` — reverted → run #3 ✅
+
+## Questions
+
+### Workflow vs job vs step
+
+- **Workflow** = the whole YAML file (`ci.yml`, `name: CI`): an automated process with its own
+  triggers (`on:`).
+- **Job** = a set of steps that runs on **one fresh runner VM** (`jobs: lint:` on
+  `ubuntu-latest`). Jobs in a workflow run in parallel unless linked with `needs:` (see
+  `deploy.yml`: `deploy` `needs: build`).
+- **Step** = one command (`run: npm run lint`) or one reusable action
+  (`uses: actions/setup-node@v5`) inside a job; steps run in order and share the job's file system.
+  If one fails, the following steps are skipped and the job fails.
+
+### Why run lint/format in CI if it runs locally too?
+
+Because "could run locally" ≠ "did run": people forget, skip hooks (`--no-verify`), have a different
+Node/ESLint version, or have uncommitted local config. CI is the single, neutral, reproducible
+check (clean checkout + `npm ci` from the lockfile) that runs for *every* push and PR, so the main
+branch can't silently accumulate problems, reviewers don't have to discuss formatting, and the
+result is visible to everyone (green/red check on the commit/PR, can be required by branch
+protection).
+
+### What does dependency caching do?
+
+`setup-node` with `cache: npm` saves npm's download cache (`~/.npm`) after a run, keyed on the hash
+of `package-lock.json`, and restores it at the start of the next run. `npm ci` then installs from
+the local cache instead of downloading every tarball again.
+Without it: **correctness is unchanged** — `npm ci` still installs exactly the lockfile versions
+(and still deletes/recreates `node_modules`), the cache only stores immutable tarballs verified by
+their integrity hash. It is only **slower** (every run downloads all packages from the registry,
+more network flakiness). When the lockfile changes, the key changes → cache miss → fresh download,
+so it can't serve stale dependencies.
+
+---
+
+# DEMO 9 — GitHub Actions: deployment workflow
+
+File: `.github/workflows/deploy.yml`
+
+- **Triggers:** `push` to `main` (what is on `main` is what is live) + `workflow_dispatch`
+  (manual redeploy button).
+- **Job `build`:** checkout → setup Node 22 with npm cache → `npm ci` → `npm run lint` →
+  `npm run format:check` → `npm run build` (= `tsc` type check + `vite build`) →
+  `actions/upload-pages-artifact@v4` with `path: dist`.
+- **Job `deploy`** (`needs: build`, environment `github-pages`): `actions/deploy-pages@v4`; the
+  environment URL (shown in the run summary) is the live site.
+- `vite.config.ts` uses `base: "./"`, so the built app works under the Pages sub-path
+  `https://alfonso-dv.github.io/awb_exercise1_devera/` (relative URLs for JS/CSS and for
+  `data/*.json`/avatars).
+
+**One-time setup (repository settings):** *Settings → Pages → Build and deployment → Source:
+**GitHub Actions***. (Without it `deploy-pages` fails with "Pages not enabled / Not Found".)
+
+**Live demo:** merge to `main` → Actions tab: "Deploy to GitHub Pages" runs build → deploy → open
+the URL and click through all views. Then make a visible change (e.g. a text in `index.html`),
+push to `main`, wait for the run, reload the site → the change is live without any manual step.
+
+## Questions
+
+### Why does the deploy workflow re-run lint and build itself?
+
+- What gets deployed must be built from **exactly this commit, in a clean environment** — not from
+  someone's laptop with uncommitted files, a different Node version or a stale `node_modules`.
+- A CI run on a feature branch checked a *different* commit; after merging, `main` is a new
+  combination of changes (merge result) that has never been checked as a whole.
+- Workflows don't share results by default; the Demo 8 run may also have been cancelled, may not
+  have run at all (e.g. direct push), or may still be running. Making the deploy self-contained
+  means a broken commit can never reach users, no matter what happened before. The extra minute
+  of CI time is cheap compared to a broken production site.
+
+### What is the mechanism used to publish to GitHub Pages?
+
+The "artifact" based Pages deployment (no `gh-pages` branch):
+
+1. `actions/upload-pages-artifact` packs `dist/` into a tar archive and uploads it as a workflow
+   **artifact** named `github-pages`.
+2. `actions/deploy-pages` requests a short-lived **OIDC token** from GitHub (that's why the
+   workflow needs `id-token: write`), and calls the Pages API (`pages: write`) to create a
+   deployment from that artifact. GitHub's Pages service then serves those files on
+   `<user>.github.io/<repo>/`; the job is linked to the `github-pages` **environment**, which
+   records the deployment history and URL.
+
+No commit is made anywhere; `contents` stays read-only.
+
+### What would change for a different static host?
+
+**Stays the same:** trigger, checkout, Node setup, `npm ci`, lint, type check, `vite build`
+producing `dist/` — the build is host-independent.
+**Changes:** only the publish step(s) and the credentials:
+
+- **Netlify / Vercel:** replace upload/deploy-pages with their CLI or action
+  (`netlify deploy --prod --dir=dist`, `vercel deploy --prebuilt --prod`), authenticated with a
+  token stored as an encrypted **repository secret** (`NETLIFY_AUTH_TOKEN`, `VERCEL_TOKEN`);
+  `pages`/`id-token` permissions no longer needed. (Both can also build on their own servers from
+  the Git repo, then the workflow only does CI.)
+- **Plain server via SFTP/rsync:** an SSH key as a secret + a step like
+  `rsync -avz --delete dist/ user@host:/var/www/app/` (or an SFTP action); configure the web server
+  to cache hashed `assets/` long-term and not cache `index.html`.
+- `base` in `vite.config.ts` may change if the app is served at the domain root (`/`).
+
+---
+
+# DEMO 10 — Triggers, permissions & failure modes
+
+**A failure that blocks deployment (to run live on `main`):** commit e.g. a type error
+(`const pageCount: number = state.currentPage;` in `navigateTo`) and push to `main` →
+"Deploy to GitHub Pages" run fails in job **build**, step **"Build (type check + vite build)"**
+with `error TS2322: Type 'string' is not assignable to type 'number'` → job **deploy** is
+**skipped** (`needs: build`), the site keeps serving the previous version. Revert → green →
+deployed. The same commit also turns "CI" red (step "Type check (tsc)").
+(The lint variant was already shown in Demo 8, run #2: the job stops at the first failing step.)
+
+**Reading a failed run's log:** Actions tab → the red run → job → the step with the red ✗ is
+expanded; the error lines (file:line, rule/TS error code) are at the end; everything after it is
+greyed out "skipped". GitHub also adds an annotation with the error to the run summary.
+
+**Permissions/secrets the deploy needs** (all visible in `deploy.yml`):
+
+| What | Where | Why |
+|---|---|---|
+| `contents: read` | `permissions:` in `deploy.yml` | checkout the code |
+| `pages: write` | `permissions:` in `deploy.yml` | create the Pages deployment |
+| `id-token: write` | `permissions:` in `deploy.yml` | OIDC token used by `deploy-pages` to authenticate |
+| Pages source = GitHub Actions | Settings → Pages | allow artifact deployments |
+| `github-pages` environment | Settings → Environments (auto-created) | deployment history; can restrict deploys to `main` (deployment branch rule) |
+
+**No secrets** are needed: the job uses the automatic, short-lived `GITHUB_TOKEN` (scoped by
+`permissions:`) and OIDC. `ci.yml` only gets `contents: read`.
+
+## Questions
+
+### When the build fails, what happens to the live app?
+
+It **stays live, unchanged** — the last successful deployment keeps being served. The deploy job
+never starts (`needs: build`), so nothing is uploaded or replaced. That's the desired behaviour:
+users keep a working (slightly older) version instead of a broken one or no site at all, and the
+red run tells the team to fix it. (`concurrency: pages` with `cancel-in-progress: false` also means
+a deployment already in progress is never cut off halfway.)
+
+### Which permissions/secrets, and the risk of over-granting?
+
+See the table: `contents: read`, `pages: write`, `id-token: write`, no stored secrets. Granted in
+the workflow's top-level `permissions:` key (which overrides the repository default for the
+`GITHUB_TOKEN`), plus the Pages source setting.
+Risk of over-granting (e.g. `permissions: write-all`, or a broad personal access token as a secret):
+every step — including third-party actions and every npm package's install/build scripts — runs
+with that token. A compromised dependency or action could then push commits (even to `main`),
+change releases, modify workflow files, or deploy arbitrary content to the site under our
+domain. Least privilege limits the blast radius: with `contents: read` it can't change the
+repository at all.
+
+### `on: push` vs `on: pull_request` vs `on: workflow_dispatch`
+
+- **`push`** — runs on the pushed commit of a branch (optionally filtered by `branches:`).
+- **`pull_request`** — runs when a PR is opened/updated, on the **merge result** of PR head + base
+  branch, and shows the result on the PR. For PRs from forks it runs with a read-only token and no
+  secrets.
+- **`workflow_dispatch`** — runs only when someone clicks "Run workflow" (or calls the API); can
+  take inputs.
+
+**Dev workflow (Demo 8): `push` (all branches) + `pull_request`** — feedback on every change as
+early as possible, and a check on the PR that reviewers/branch protection can rely on.
+**Deploy workflow (Demo 9): `push` to `main` + `workflow_dispatch`** — only reviewed, merged code
+on `main` may go live, never a work-in-progress branch or an unmerged PR (and PR runs must not get
+`pages: write`); the manual trigger allows redeploying (e.g. after enabling Pages or a hosting
+hiccup) without a dummy commit.
+
+---
+
+## Summary of the final setup
+
+```
+npm run dev           # Vite dev server + HMR + live type checking
+npm run typecheck     # tsc (app + vite.config.ts)
+npm run build         # typecheck + vite build → dist/
+npm run preview       # serve dist/
+npm run lint          # ESLint (type-aware), fails on any warning
+npm run lint:fix      # ESLint autofix
+npm run format        # Prettier write
+npm run format:check  # Prettier check (CI)
+```
+
+Workflows: `.github/workflows/ci.yml` (every push/PR), `.github/workflows/deploy.yml` (push to
+`main` / manual → GitHub Pages).
+
+Note: the first CI runs used `actions/checkout@v4`/`setup-node@v4`, which printed a "Node.js 20
+is deprecated" warning in the logs; both workflows now use `@v5` (Node 24 based).

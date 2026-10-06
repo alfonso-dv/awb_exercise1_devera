@@ -28,6 +28,18 @@ npm run preview   # serve the built dist/ locally
 Static files that are fetched at runtime (`data/*.json`, person avatars) live in `public/` and are
 copied unchanged into `dist/`.
 
+## Code quality & CI/CD
+
+```bash
+npm run lint          # ESLint (fails on any warning)  | npm run lint:fix
+npm run format:check  # Prettier check                 | npm run format
+npm run typecheck     # TypeScript (strict)
+```
+
+- `.github/workflows/ci.yml` runs lint, format check and type check on every push and pull request.
+- `.github/workflows/deploy.yml` builds and deploys `dist/` to GitHub Pages on every push to `main`
+  (requires *Settings → Pages → Source: GitHub Actions*).
+
 ## Features
 
 - **Dashboard** — case summary and key statistics calculated from the loaded case data.
