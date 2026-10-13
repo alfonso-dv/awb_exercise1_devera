@@ -1,18 +1,17 @@
-import type { Evidence, Person } from "../../../../types.ts";
-import { evidenceMentionsPerson } from "../../../../utils.ts";
+import type { Person } from "../../../../types.ts";
 import { BulletList } from "../../../shared/components/BulletList.tsx";
 
 interface PersonCardProps {
   person: Person;
-  /** All evidence items — the card counts the ones that mention this person. */
-  allEvidence: Evidence[];
+  /** Number of evidence items that mention this person (computed by the caller). */
+  evidenceCount: number;
 }
 
-export function PersonCard({ person, allEvidence }: PersonCardProps) {
-  const evidenceCount = allEvidence.filter((ev) =>
-    evidenceMentionsPerson(ev, person)
-  ).length;
-
+/**
+ * Presentational: shows one person. It doesn't know where the data comes from
+ * or how the evidence count is worked out — it only displays what it's given.
+ */
+export function PersonCard({ person, evidenceCount }: PersonCardProps) {
   return (
     <div className="person-card">
       <div className="person-card-header">
