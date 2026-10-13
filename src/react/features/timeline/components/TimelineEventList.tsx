@@ -1,15 +1,17 @@
-import type { CaseLocation, TimelineEvent } from "../../../../types.ts";
+import type { CaseLocation, Person, TimelineEvent } from "../../../../types.ts";
 import { EmptyState } from "../../../shared/components/EmptyState.tsx";
 import { TimelineEventItem } from "./TimelineEventItem.tsx";
 
 interface TimelineEventListProps {
   events: readonly TimelineEvent[];
   locations: readonly CaseLocation[];
+  people: readonly Person[];
 }
 
 export function TimelineEventList({
   events,
-  locations
+  locations,
+  people
 }: TimelineEventListProps) {
   if (events.length === 0) {
     return (
@@ -25,6 +27,9 @@ export function TimelineEventList({
           event={event}
           locations={locations.filter((loc) =>
             event.locationIds.includes(loc.id)
+          )}
+          people={people.filter((person) =>
+            event.personIds.includes(person.id)
           )}
         />
       ))}

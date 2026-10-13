@@ -13,7 +13,7 @@ export function LocationsTab() {
   return (
     <div className="locations-grid">
       {locations.map((location) => (
-        <LocationCard key={location.id} location={location} />
+        <LocationCard key={location.id} location={location} showDetailLink />
       ))}
     </div>
   );

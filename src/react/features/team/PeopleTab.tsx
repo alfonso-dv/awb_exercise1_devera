@@ -22,6 +22,7 @@ export function PeopleTab() {
           key={person.id}
           person={person}
           evidenceCount={evidenceCounts.get(person.id) ?? 0}
+          showProfileLink
         />
       ))}
     </div>

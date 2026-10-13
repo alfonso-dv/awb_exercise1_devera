@@ -55,7 +55,11 @@ export function TimelinePage() {
         </div>
       )}
 
-      <TimelineEventList events={events} locations={locations} />
+      <TimelineEventList
+        events={events}
+        people={people}
+        locations={locations}
+      />
     </section>
   );
 }

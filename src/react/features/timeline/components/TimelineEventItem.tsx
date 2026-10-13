@@ -1,4 +1,6 @@
-import type { CaseLocation, TimelineEvent } from "../../../../types.ts";
+import { Fragment } from "react";
+import { Link } from "react-router";
+import type { CaseLocation, Person, TimelineEvent } from "../../../../types.ts";
 import { formatDate } from "../../../../utils.ts";
 import { CertaintyBadge } from "./CertaintyBadge.tsx";
 
@@ -6,11 +8,14 @@ interface TimelineEventItemProps {
   event: TimelineEvent;
   /** The event's locations, already resolved by the caller. */
   locations: readonly CaseLocation[];
+  /** The people involved, already resolved by the caller. */
+  people: readonly Person[];
 }
 
 export function TimelineEventItem({
   event,
-  locations
+  locations,
+  people
 }: TimelineEventItemProps) {
   return (
     <div className={`timeline-event certainty-${event.certainty}`}>
@@ -24,7 +29,28 @@ export function TimelineEventItem({
       {locations.length > 0 && (
         <p className="evidence-meta">
           Location:{" "}
-          {locations.map((loc) => `${loc.id} - ${loc.name}`).join(", ")}
+          {locations.map((loc, i) => (
+            <Fragment key={loc.id}>
+              {i > 0 && ", "}
+              <Link to={`/team/locations/${encodeURIComponent(loc.id)}`}>
+                {loc.id} - {loc.name}
+              </Link>
+            </Fragment>
+          ))}
+        </p>
+      )}
+
+      {people.length > 0 && (
+        <p className="evidence-meta">
+          People:{" "}
+          {people.map((person, i) => (
+            <Fragment key={person.id}>
+              {i > 0 && ", "}
+              <Link to={`/team/people/${encodeURIComponent(person.id)}`}>
+                {person.name}
+              </Link>
+            </Fragment>
+          ))}
         </p>
       )}
 

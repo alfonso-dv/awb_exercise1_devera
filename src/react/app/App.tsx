@@ -1,7 +1,9 @@
 import { HashRouter, Navigate, Route, Routes } from "react-router";
 import { DashboardPage } from "../features/dashboard/DashboardPage.tsx";
+import { LocationDetailPage } from "../features/team/LocationDetailPage.tsx";
 import { LocationsTab } from "../features/team/LocationsTab.tsx";
 import { PeopleTab } from "../features/team/PeopleTab.tsx";
+import { PersonDetailPage } from "../features/team/PersonDetailPage.tsx";
 import { TeamLayout } from "../features/team/TeamLayout.tsx";
 import { TimelinePage } from "../features/timeline/TimelinePage.tsx";
 import { AppLayout } from "./layout/AppLayout.tsx";
@@ -26,7 +28,12 @@ export function App() {
           <Route path="team" element={<TeamLayout />}>
             <Route index element={<Navigate to="people" replace />} />
             <Route path="people" element={<PeopleTab />} />
+            <Route path="people/:personId" element={<PersonDetailPage />} />
             <Route path="locations" element={<LocationsTab />} />
+            <Route
+              path="locations/:locationId"
+              element={<LocationDetailPage />}
+            />
           </Route>
 
           <Route path="timeline" element={<TimelinePage />} />
