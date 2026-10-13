@@ -6,6 +6,7 @@ import { PeopleTab } from "../features/team/PeopleTab.tsx";
 import { PersonDetailPage } from "../features/team/PersonDetailPage.tsx";
 import { TeamLayout } from "../features/team/TeamLayout.tsx";
 import { TimelinePage } from "../features/timeline/TimelinePage.tsx";
+import { KeyIdentityDemo } from "../sandbox/KeyIdentityDemo.tsx";
 import { AppLayout } from "./layout/AppLayout.tsx";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import { PlaceholderPage } from "./PlaceholderPage.tsx";
@@ -56,6 +57,9 @@ export function App() {
               />
             }
           />
+
+          {/* Throwaway demo for Exercise 4, Demo 4 (not linked in the nav). */}
+          <Route path="sandbox/keys" element={<KeyIdentityDemo />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>
