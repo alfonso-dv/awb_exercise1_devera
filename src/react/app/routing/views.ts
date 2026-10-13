@@ -1,4 +1,4 @@
-import type { ViewName } from "../../state.ts";
+import type { ViewName } from "../../../state.ts";
 
 /** One entry per view, in navigation order. */
 export const NAV_ITEMS: ReadonlyArray<{ view: ViewName; label: string }> = [

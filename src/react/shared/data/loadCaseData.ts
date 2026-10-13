@@ -1,5 +1,5 @@
-import { fetchJson, normalizeEvidence } from "../../data.ts";
-import { readStoredBookmarks } from "../../storage.ts";
+import { fetchJson, normalizeEvidence } from "../../../data.ts";
+import { readStoredBookmarks } from "../../../storage.ts";
 import type {
   CaseInfo,
   CaseLocation,
@@ -7,7 +7,7 @@ import type {
   Person,
   RawEvidence,
   TimelineEvent
-} from "../../types.ts";
+} from "../../../types.ts";
 
 /** Everything the React views need, loaded once for the whole app. */
 export interface CaseData {

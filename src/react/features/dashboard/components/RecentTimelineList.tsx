@@ -1,5 +1,5 @@
-import type { TimelineEvent } from "../../../types.ts";
-import { formatDate } from "../../../utils.ts";
+import type { TimelineEvent } from "../../../../types.ts";
+import { formatDate } from "../../../../utils.ts";
 
 interface RecentTimelineListProps {
   events: TimelineEvent[];

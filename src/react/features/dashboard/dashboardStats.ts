@@ -1,5 +1,5 @@
-import type { CaseData } from "./loadCaseData.ts";
-import type { Evidence, TimelineEvent } from "../../types.ts";
+import type { CaseData } from "../../shared/data/loadCaseData.ts";
+import type { Evidence, TimelineEvent } from "../../../types.ts";
 
 export interface DashboardStats {
   evidenceCount: number;

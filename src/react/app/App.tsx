@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import type { ViewName } from "../state.ts";
-import { LoadingState } from "./components/common/LoadingState.tsx";
-import { AppHeader } from "./components/layout/AppHeader.tsx";
-import type { CaseData } from "./data/loadCaseData.ts";
-import { useCaseData } from "./data/useCaseData.ts";
-import { DashboardPage } from "./pages/DashboardPage.tsx";
-import { NotFoundPage } from "./pages/NotFoundPage.tsx";
-import { PlaceholderPage } from "./pages/PlaceholderPage.tsx";
+import type { ViewName } from "../../state.ts";
+import { LoadingState } from "../shared/components/LoadingState.tsx";
+import { AppHeader } from "./layout/AppHeader.tsx";
+import type { CaseData } from "../shared/data/loadCaseData.ts";
+import { useCaseData } from "../shared/data/useCaseData.ts";
+import { DashboardPage } from "../features/dashboard/DashboardPage.tsx";
+import { NotFoundPage } from "./NotFoundPage.tsx";
+import { PlaceholderPage } from "./PlaceholderPage.tsx";
 import { useHashRoute, type Route } from "./routing/useHashRoute.ts";
 
 function renderView(view: ViewName, data: CaseData): ReactNode {

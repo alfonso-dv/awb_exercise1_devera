@@ -1,4 +1,4 @@
-import type { CaseInfo } from "../../../types.ts";
+import type { CaseInfo } from "../../../../types.ts";
 
 interface CaseSummaryCardProps {
   caseInfo: CaseInfo;

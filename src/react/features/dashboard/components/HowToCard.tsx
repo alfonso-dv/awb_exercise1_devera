@@ -1,5 +1,5 @@
-import type { ViewName } from "../../../state.ts";
-import { navigate } from "../../routing/useHashRoute.ts";
+import type { ViewName } from "../../../../state.ts";
+import { navigate } from "../../../app/routing/useHashRoute.ts";
 
 const HOW_TO_ITEMS: ReadonlyArray<{
   view: ViewName;

@@ -1,5 +1,5 @@
-import type { Evidence } from "../../../types.ts";
-import { StatusBadge } from "../common/StatusBadge.tsx";
+import type { Evidence } from "../../../../types.ts";
+import { StatusBadge } from "../../../shared/components/StatusBadge.tsx";
 
 interface RecentEvidenceListProps {
   items: Evidence[];

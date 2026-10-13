@@ -1,4 +1,4 @@
-import { navigate } from "../routing/useHashRoute.ts";
+import { navigate } from "./routing/useHashRoute.ts";
 
 interface NotFoundPageProps {
   requested: string;

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { isViewName, type ViewName } from "../../state.ts";
+import { isViewName, type ViewName } from "../../../state.ts";
 
 /** What the shell should render for the current URL hash. */
 export type Route =

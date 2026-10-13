@@ -1,6 +1,6 @@
 import type { ViewName } from "../../../state.ts";
-import { navigate } from "../../routing/useHashRoute.ts";
-import { NAV_ITEMS } from "../../routing/views.ts";
+import { navigate } from "../routing/useHashRoute.ts";
+import { NAV_ITEMS } from "../routing/views.ts";
 
 interface NavBarProps {
   /** Highlighted view; null when the URL doesn't match any view. */
