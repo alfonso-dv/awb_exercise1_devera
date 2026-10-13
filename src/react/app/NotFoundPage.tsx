@@ -1,24 +1,19 @@
-import { navigate } from "./routing/useHashRoute.ts";
+import { Link, useLocation } from "react-router";
 
-interface NotFoundPageProps {
-  requested: string;
-}
+/** Rendered by the catch-all route (path="*") for any unknown URL. */
+export function NotFoundPage() {
+  const { pathname } = useLocation();
 
-export function NotFoundPage({ requested }: NotFoundPageProps) {
   return (
     <section className="view active">
-      <h2>View not found</h2>
+      <h2>Page not found</h2>
       <div className="dashboard-panel">
         <p>
-          There is no view called <code>{requested}</code>.
+          There is no page at <code>{pathname}</code>.
         </p>
-        <button
-          type="button"
-          className="btn btn-primary btn-small"
-          onClick={() => navigate("dashboard")}
-        >
+        <Link to="/dashboard" className="btn btn-primary btn-small">
           Go to the Dashboard
-        </button>
+        </Link>
       </div>
     </section>
   );

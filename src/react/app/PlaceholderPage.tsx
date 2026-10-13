@@ -1,13 +1,11 @@
-import type { ViewName } from "../../state.ts";
-
 interface PlaceholderPageProps {
   title: string;
-  /** Same view in the vanilla app, which still has the real implementation. */
-  view: ViewName;
+  /** Hash of the same view in the vanilla app, which still implements it. */
+  vanillaView: string;
 }
 
-/** Stub for views that are migrated in Exercises 4 and 5. */
-export function PlaceholderPage({ title, view }: PlaceholderPageProps) {
+/** Stub for views that are migrated in Exercise 5. */
+export function PlaceholderPage({ title, vanillaView }: PlaceholderPageProps) {
   return (
     <section className="view active">
       <h2>{title}</h2>
@@ -15,8 +13,8 @@ export function PlaceholderPage({ title, view }: PlaceholderPageProps) {
         <p>This view hasn't been migrated to React yet.</p>
         <p>
           Use the{" "}
-          <a href={`index.html#${view}`}>vanilla version of this view</a> in the
-          meantime.
+          <a href={`index.html#${vanillaView}`}>vanilla version of this view</a>{" "}
+          in the meantime.
         </p>
       </div>
     </section>

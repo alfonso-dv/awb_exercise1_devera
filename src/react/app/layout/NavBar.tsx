@@ -1,25 +1,22 @@
-import type { ViewName } from "../../../state.ts";
-import { navigate } from "../routing/useHashRoute.ts";
-import { NAV_ITEMS } from "../routing/views.ts";
+import { NavLink } from "react-router";
+import { NAV_ITEMS } from "../routing/navItems.ts";
 
-interface NavBarProps {
-  /** Highlighted view; null when the URL doesn't match any view. */
-  activeView: ViewName | null;
-}
-
-export function NavBar({ activeView }: NavBarProps) {
+export function NavBar() {
   return (
     <nav className="main-nav" aria-label="Main navigation">
-      {NAV_ITEMS.map(({ view, label }) => (
-        <button
-          key={view}
-          type="button"
-          className={view === activeView ? "nav-btn active" : "nav-btn"}
-          aria-current={view === activeView ? "page" : undefined}
-          onClick={() => navigate(view)}
+      {NAV_ITEMS.map(({ to, label }) => (
+        // NavLink knows the current URL and marks itself active (it also
+        // sets aria-current="page"). "/team" stays active for /team/people,
+        // /team/locations and /team/people/:personId.
+        <NavLink
+          key={to}
+          to={to}
+          className={({ isActive }) =>
+            isActive ? "nav-btn active" : "nav-btn"
+          }
         >
           {label}
-        </button>
+        </NavLink>
       ))}
     </nav>
   );

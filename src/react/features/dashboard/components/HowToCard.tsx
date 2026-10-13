@@ -1,32 +1,31 @@
-import type { ViewName } from "../../../../state.ts";
-import { navigate } from "../../../app/routing/useHashRoute.ts";
+import { Link } from "react-router";
 
 const HOW_TO_ITEMS: ReadonlyArray<{
-  view: ViewName;
+  to: string;
   heading: string;
   text: string;
   button: string;
 }> = [
   {
-    view: "evidence",
+    to: "/evidence",
     heading: "1. Evidence Catalogue",
     text: "Search, filter, and sort every evidence item. Open one for full details, related people and locations, and to add a private note.",
     button: "Go to Evidence"
   },
   {
-    view: "people",
+    to: "/team/people",
     heading: "2. People & Locations",
     text: "Read profiles and statements from the six team members involved, and look up the six key locations in the investigation.",
     button: "Go to People & Locations"
   },
   {
-    view: "timeline",
+    to: "/timeline",
     heading: "3. Timeline",
     text: "Walk through events in chronological order, filter by person, location, or type, and jump straight to the evidence behind any event.",
     button: "Go to Timeline"
   },
   {
-    view: "workspace",
+    to: "/workspace",
     heading: "4. Investigator Workspace",
     text: "Your bookmarked evidence and notes collect here. Draft a hypothesis — who you suspect, why, and how confident you are — it's saved automatically in your browser.",
     button: "Go to Workspace"
@@ -45,16 +44,12 @@ export function HowToCard() {
       </p>
       <div className="howto-grid">
         {HOW_TO_ITEMS.map((item) => (
-          <div key={item.view} className="howto-item">
+          <div key={item.to} className="howto-item">
             <h4>{item.heading}</h4>
             <p>{item.text}</p>
-            <button
-              type="button"
-              className="btn btn-secondary btn-small"
-              onClick={() => navigate(item.view)}
-            >
+            <Link to={item.to} className="btn btn-secondary btn-small">
               {item.button}
-            </button>
+            </Link>
           </div>
         ))}
       </div>

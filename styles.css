@@ -846,3 +846,15 @@ a:focus-visible {
     display: block;
   }
 }
+
+/* React version: navigation uses router links (<a>) instead of <button>s.
+   Make them look exactly like the buttons they replace. */
+a.nav-btn,
+a.tab-btn,
+a.btn {
+  display: inline-block;
+  text-decoration: none;
+}
+a.tab-btn {
+  color: var(--color-text);
+}

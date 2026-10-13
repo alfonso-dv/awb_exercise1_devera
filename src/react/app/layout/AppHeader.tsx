@@ -1,12 +1,7 @@
-import type { ViewName } from "../../../state.ts";
 import logoUrl from "../../../../assets/logo/logo.svg";
 import { NavBar } from "./NavBar.tsx";
 
-interface AppHeaderProps {
-  activeView: ViewName | null;
-}
-
-export function AppHeader({ activeView }: AppHeaderProps) {
+export function AppHeader() {
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -23,7 +18,7 @@ export function AppHeader({ activeView }: AppHeaderProps) {
             </p>
           </div>
         </div>
-        <NavBar activeView={activeView} />
+        <NavBar />
       </div>
     </header>
   );

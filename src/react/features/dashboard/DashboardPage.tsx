@@ -5,13 +5,11 @@ import { RecentTimelineList } from "./components/RecentTimelineList.tsx";
 import { ReviewProgress } from "./components/ReviewProgress.tsx";
 import { StatCard } from "./components/StatCard.tsx";
 import { computeDashboardStats } from "./dashboardStats.ts";
-import type { CaseData } from "../../shared/data/loadCaseData.ts";
+import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
 
-interface DashboardPageProps {
-  data: CaseData;
-}
+export function DashboardPage() {
+  const data = useCaseDataFromLayout();
 
-export function DashboardPage({ data }: DashboardPageProps) {
   // Derived values are recalculated from the current data on every render —
   // there is no cached HTML that could go stale.
   const stats = computeDashboardStats(data);

@@ -1,57 +1,58 @@
-import type { ReactNode } from "react";
-import type { ViewName } from "../../state.ts";
-import { LoadingState } from "../shared/components/LoadingState.tsx";
-import { AppHeader } from "./layout/AppHeader.tsx";
-import type { CaseData } from "../shared/data/loadCaseData.ts";
-import { useCaseData } from "../shared/data/useCaseData.ts";
+import { HashRouter, Navigate, Route, Routes } from "react-router";
 import { DashboardPage } from "../features/dashboard/DashboardPage.tsx";
+import { LocationsTab } from "../features/team/LocationsTab.tsx";
+import { PeopleTab } from "../features/team/PeopleTab.tsx";
+import { TeamLayout } from "../features/team/TeamLayout.tsx";
+import { TimelinePage } from "../features/timeline/TimelinePage.tsx";
+import { AppLayout } from "./layout/AppLayout.tsx";
 import { NotFoundPage } from "./NotFoundPage.tsx";
 import { PlaceholderPage } from "./PlaceholderPage.tsx";
-import { useHashRoute, type Route } from "./routing/useHashRoute.ts";
 
-function renderView(view: ViewName, data: CaseData): ReactNode {
-  switch (view) {
-    case "dashboard":
-      return <DashboardPage data={data} />;
-    case "evidence":
-      return <PlaceholderPage title="Evidence Catalogue" view="evidence" />;
-    case "people":
-      return <PlaceholderPage title="People & Locations" view="people" />;
-    case "timeline":
-      return <PlaceholderPage title="Timeline" view="timeline" />;
-    case "workspace":
-      return (
-        <PlaceholderPage title="Investigator Workspace" view="workspace" />
-      );
-  }
-}
-
-function renderRoute(route: Route, data: CaseData): ReactNode {
-  return route.kind === "view" ? (
-    renderView(route.view, data)
-  ) : (
-    <NotFoundPage requested={route.requested} />
-  );
-}
-
+/**
+ * Route table.
+ *
+ * HashRouter keeps the route after the "#" (react.html#/team/people): GitHub
+ * Pages only serves real files, so a path-based URL like /team/people would
+ * 404 on reload, while the hash part never reaches the server.
+ */
 export function App() {
-  const route = useHashRoute();
-  // Loaded once here, at the top of the tree, so it survives navigation:
-  // pages unmount when you leave them, <App /> never does.
-  const caseData = useCaseData();
-
   return (
-    <>
-      <AppHeader activeView={route.kind === "view" ? route.view : null} />
-      <main className="app-main">
-        {caseData.status === "loading" && <LoadingState />}
-        {caseData.status === "error" && (
-          <div className="warning-banner">
-            The case file could not be loaded. Please reload the page.
-          </div>
-        )}
-        {caseData.status === "ready" && renderRoute(route, caseData.data)}
-      </main>
-    </>
+    <HashRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+
+          <Route path="team" element={<TeamLayout />}>
+            <Route index element={<Navigate to="people" replace />} />
+            <Route path="people" element={<PeopleTab />} />
+            <Route path="locations" element={<LocationsTab />} />
+          </Route>
+
+          <Route path="timeline" element={<TimelinePage />} />
+
+          <Route
+            path="evidence"
+            element={
+              <PlaceholderPage
+                title="Evidence Catalogue"
+                vanillaView="evidence"
+              />
+            }
+          />
+          <Route
+            path="workspace"
+            element={
+              <PlaceholderPage
+                title="Investigator Workspace"
+                vanillaView="workspace"
+              />
+            }
+          />
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </HashRouter>
   );
 }
