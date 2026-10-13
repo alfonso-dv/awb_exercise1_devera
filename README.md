@@ -26,8 +26,13 @@ npm run preview   # serve the built dist/ locally
 ```
 
 During the React migration there are two pages: `index.html` is the complete vanilla TypeScript
-app, and `react.html` is the React version (application shell + Dashboard so far; the other views
-link back to the vanilla app).
+app, and `react.html` is the React version. Dashboard, People & Locations and Timeline are fully
+React; Evidence and Workspace still link back to the vanilla app. React routes live after the `#`,
+e.g. `react.html#/team/people/nova-byte` or `react.html#/timeline?person=nova-byte`. See
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the folder structure and routes.
+
+> Don't open the app with VS Code Live Server or by double-clicking `index.html` — the TypeScript
+> sources must go through Vite (`npm run dev`), otherwise styles and buttons don't work.
 
 Static files that are fetched at runtime (`data/*.json`, person avatars) live in `public/` and are
 copied unchanged into `dist/`.

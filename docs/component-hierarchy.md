@@ -1,5 +1,9 @@
 # Component hierarchy — Project ReMotion (React)
 
+> **Update after Exercise 4:** People & Locations and Timeline are now built too, routing uses
+> React Router, and the code is organised by feature — see [`ARCHITECTURE.md`](ARCHITECTURE.md)
+> for the current structure and routes. The diagram below is the original Exercise 3 plan.
+
 Target structure for the **whole** app. ✅ = built in Exercise 3, everything else is planned for
 Exercises 4 and 5. File locations follow `src/react/`.
 
