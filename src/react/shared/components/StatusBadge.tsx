@@ -1,12 +1,18 @@
-import { getStatusBadgeClass } from "../../../utils.ts";
+import { Badge, type BadgeVariant } from "./Badge.tsx";
 
 interface StatusBadgeProps {
   status: string;
 }
 
-/** Review-status badge; reused by the dashboard, evidence cards and detail view. */
+/** Maps a free-text review status ("Reviewed", "unreviewed", …) to a variant. */
+export function statusVariant(status: string): BadgeVariant {
+  const s = status.toLowerCase();
+  if (s === "reviewed") return "reviewed";
+  if (s === "flagged") return "flagged";
+  return "unreviewed";
+}
+
+/** Review-status badge for an evidence item. */
 export function StatusBadge({ status }: StatusBadgeProps) {
-  return (
-    <span className={`badge ${getStatusBadgeClass(status)}`}>{status}</span>
-  );
+  return <Badge variant={statusVariant(status)}>{status}</Badge>;
 }
