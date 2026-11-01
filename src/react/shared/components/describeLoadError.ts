@@ -1,6 +1,6 @@
-import { ApiError, DATA_SOURCE } from "./http.ts";
+import { ApiError, DATA_SOURCE } from "../api/http.ts";
 
-/** Turns a failed request into a sentence for the user. */
+/** UI wording: turns a failed request into a sentence for the user. */
 export function describeLoadError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 404)

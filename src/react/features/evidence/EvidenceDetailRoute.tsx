@@ -1,5 +1,4 @@
 import { Link, useParams } from "react-router";
-import { normalizeEvidence } from "../../../data.ts";
 import { ApiError } from "../../shared/api/http.ts";
 import { ErrorState } from "../../shared/components/ErrorState.tsx";
 import { Panel } from "../../shared/components/Panel.tsx";
@@ -19,7 +18,7 @@ export function EvidenceDetailRoute() {
   const { evidenceId = "" } = useParams<{ evidenceId: string }>();
   const { data, notes, onSaveNote, onReviewChange, withReviewEdits } =
     useLayoutContext();
-  const { state, retry } = useEvidenceItem(evidenceId);
+  const { state, retry } = useEvidenceItem(evidenceId, data.people);
 
   if (state.status === "loading") {
     return (
@@ -49,7 +48,7 @@ export function EvidenceDetailRoute() {
     );
   }
 
-  const ev = withReviewEdits(normalizeEvidence(state.data, data.people));
+  const ev = withReviewEdits(state.data);
 
   return (
     <EvidenceDetail

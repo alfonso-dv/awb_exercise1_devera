@@ -1,4 +1,4 @@
-import { describeLoadError } from "../api/errors.ts";
+import { describeLoadError } from "./describeLoadError.ts";
 
 interface ErrorStateProps {
   /** What failed to load, e.g. "the case file". */
