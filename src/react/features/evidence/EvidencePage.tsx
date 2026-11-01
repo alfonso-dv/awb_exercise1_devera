@@ -58,9 +58,7 @@ export function EvidencePage() {
 
       <EvidenceList
         items={visible}
-        bookmarks={layout.bookmarks}
         selectedId={selectedId}
-        onToggleBookmark={layout.onToggleBookmark}
         onOpen={(id) => void navigate(`/evidence/${encodeURIComponent(id)}`)}
       />
     </section>

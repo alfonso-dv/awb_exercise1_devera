@@ -11,9 +11,6 @@ import type { CaseData } from "./loadCaseData.ts";
 export interface LayoutContext {
   /** Case data; `evidence` already includes the investigator's review edits. */
   data: CaseData;
-  /** Bookmarked evidence ids — the single source of truth for bookmarks. */
-  bookmarks: readonly EvidenceId[];
-  onToggleBookmark: (id: EvidenceId) => void;
   /** Saved notes, evidence id -> text. */
   notes: Readonly<Record<EvidenceId, string>>;
   onSaveNote: (id: EvidenceId, text: string) => void;

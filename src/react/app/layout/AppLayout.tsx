@@ -1,19 +1,11 @@
 import { useState } from "react";
 import { Outlet } from "react-router";
 import type { EvidenceId } from "../../../types.ts";
-import {
-  readStoredBookmarks,
-  readStoredNotes,
-  writeStoredBookmarks,
-  writeStoredNotes
-} from "../../../storage.ts";
+import { readStoredNotes, writeStoredNotes } from "../../../storage.ts";
 import { LoadingState } from "../../shared/components/LoadingState.tsx";
 import type { LayoutContext } from "../../shared/data/caseDataOutlet.ts";
 import { useCaseData } from "../../shared/data/useCaseData.ts";
-import {
-  frozenBookmarks,
-  toggleBookmarkId
-} from "../../shared/state/bookmarks.ts";
+import { BookmarksProvider } from "../../shared/state/BookmarksProvider.tsx";
 import {
   applyReviewEdits,
   setReviewField,
@@ -27,27 +19,19 @@ import { AppHeader } from "./AppHeader.tsx";
  * route renders where <Outlet /> is.
  *
  * It is also the lowest common owner of the state that several pages share:
- * bookmarks (Evidence cards, Dashboard count, Workspace list), notes
- * (Evidence detail, Workspace) and review edits (Evidence, Dashboard). The
- * state lives here, once; pages get it — and the callbacks to change it —
- * through the outlet context.
+ * notes (Evidence detail, Workspace) and review edits (Evidence, Dashboard)
+ * live here and reach the pages — with the callbacks to change them — through
+ * the outlet context. Bookmarks (Evidence cards, Dashboard count, Workspace
+ * list) are owned by <BookmarksProvider>, also placed here, and read with
+ * useBookmarks().
  */
 export function AppLayout() {
   const caseData = useCaseData();
 
   // Lazy initialisers: localStorage is read once, on the first render only.
-  const [bookmarks, setBookmarks] = useState<readonly EvidenceId[]>(() =>
-    frozenBookmarks(readStoredBookmarks())
-  );
   const [notes, setNotes] =
     useState<Readonly<Record<EvidenceId, string>>>(readStoredNotes);
   const [reviewEdits, setReviewEdits] = useState<ReviewEdits>({});
-
-  function handleToggleBookmark(id: EvidenceId): void {
-    const next = toggleBookmarkId(bookmarks, id);
-    setBookmarks(next);
-    writeStoredBookmarks(next);
-  }
 
   function handleSaveNote(id: EvidenceId, text: string): void {
     const next = { ...notes, [id]: text };
@@ -81,8 +65,6 @@ export function AppLayout() {
         ...caseData.data,
         evidence: applyReviewEdits(caseData.data.evidence, reviewEdits)
       },
-      bookmarks,
-      onToggleBookmark: handleToggleBookmark,
       notes,
       onSaveNote: handleSaveNote,
       onReviewChange: handleReviewChange
@@ -91,9 +73,11 @@ export function AppLayout() {
   }
 
   return (
-    <>
+    // Bookmarks are provided through React Context (useBookmarks()); the
+    // rest of the shared state goes through the outlet context.
+    <BookmarksProvider>
       <AppHeader />
       <main className="app-main">{content}</main>
-    </>
+    </BookmarksProvider>
   );
 }

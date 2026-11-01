@@ -4,19 +4,11 @@ import { EvidenceCard } from "./EvidenceCard.tsx";
 
 interface EvidenceListProps {
   items: readonly Evidence[];
-  bookmarks: readonly EvidenceId[];
   selectedId: EvidenceId | undefined;
-  onToggleBookmark: (id: EvidenceId) => void;
   onOpen: (id: EvidenceId) => void;
 }
 
-export function EvidenceList({
-  items,
-  bookmarks,
-  selectedId,
-  onToggleBookmark,
-  onOpen
-}: EvidenceListProps) {
+export function EvidenceList({ items, selectedId, onOpen }: EvidenceListProps) {
   if (items.length === 0) {
     return <EmptyState>No evidence matches the current filters.</EmptyState>;
   }
@@ -27,9 +19,7 @@ export function EvidenceList({
         <EvidenceCard
           key={ev.id}
           evidence={ev}
-          bookmarked={bookmarks.includes(ev.id)}
           selected={ev.id === selectedId}
-          onToggleBookmark={onToggleBookmark}
           onOpen={onOpen}
         />
       ))}

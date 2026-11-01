@@ -1,11 +1,13 @@
 import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
+import { useBookmarks } from "../../shared/state/bookmarksContext.ts";
 import { BookmarksList } from "./components/BookmarksList.tsx";
 import { HypothesisForm } from "./components/HypothesisForm.tsx";
 import { NotesList, type NoteEntry } from "./components/NotesList.tsx";
 
 /** /workspace */
 export function WorkspacePage() {
-  const { data, bookmarks, notes, onToggleBookmark } = useLayoutContext();
+  const { data, notes } = useLayoutContext();
+  const { bookmarks, toggleBookmark } = useBookmarks();
 
   // Both lists are derived from the single sources of truth (bookmarks,
   // notes) on every render — nothing here is stored separately.
@@ -24,7 +26,7 @@ export function WorkspacePage() {
           <h3>Bookmarked Evidence</h3>
           <BookmarksList
             items={bookmarkedItems}
-            onToggleBookmark={onToggleBookmark}
+            onToggleBookmark={toggleBookmark}
           />
         </div>
         <div className="workspace-col">

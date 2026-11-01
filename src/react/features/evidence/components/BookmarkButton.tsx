@@ -1,23 +1,27 @@
 import type { MouseEvent } from "react";
+import type { EvidenceId } from "../../../../types.ts";
+import { useBookmarks } from "../../../shared/state/bookmarksContext.ts";
 
 interface BookmarkButtonProps {
-  bookmarked: boolean;
+  evidenceId: EvidenceId;
   /** Used for the accessible label. */
   title: string;
-  onToggle: () => void;
 }
 
-/** The ☆/★ toggle on an evidence card. */
-export function BookmarkButton({
-  bookmarked,
-  title,
-  onToggle
-}: BookmarkButtonProps) {
+/**
+ * The ☆/★ toggle on an evidence card. Reads and changes the bookmark state
+ * directly from BookmarksContext — the components above it (EvidencePage,
+ * EvidenceList, EvidenceCard) no longer pass bookmark props through.
+ */
+export function BookmarkButton({ evidenceId, title }: BookmarkButtonProps) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const bookmarked = isBookmarked(evidenceId);
+
   function handleClick(event: MouseEvent<HTMLButtonElement>): void {
     // The card around this button opens the detail view on click; a click on
     // the star should only toggle the bookmark, so stop it from bubbling up.
     event.stopPropagation();
-    onToggle();
+    toggleBookmark(evidenceId);
   }
 
   return (

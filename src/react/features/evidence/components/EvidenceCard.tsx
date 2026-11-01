@@ -7,18 +7,14 @@ import { BookmarkButton } from "./BookmarkButton.tsx";
 
 interface EvidenceCardProps {
   evidence: Evidence;
-  bookmarked: boolean;
   /** Is this the item currently open in the detail view? */
   selected: boolean;
-  onToggleBookmark: (id: EvidenceId) => void;
   onOpen: (id: EvidenceId) => void;
 }
 
 export function EvidenceCard({
   evidence: ev,
-  bookmarked,
   selected,
-  onToggleBookmark,
   onOpen
 }: EvidenceCardProps) {
   return (
@@ -26,11 +22,7 @@ export function EvidenceCard({
       className={selected ? "evidence-card selected" : "evidence-card"}
       onClick={() => onOpen(ev.id)}
     >
-      <BookmarkButton
-        bookmarked={bookmarked}
-        title={ev.title}
-        onToggle={() => onToggleBookmark(ev.id)}
-      />
+      <BookmarkButton evidenceId={ev.id} title={ev.title} />
       <h3>{ev.title}</h3>
       <div className="evidence-meta">
         {ev.id} &middot; {ev.type} &middot; {formatDate(ev.timestamp)}

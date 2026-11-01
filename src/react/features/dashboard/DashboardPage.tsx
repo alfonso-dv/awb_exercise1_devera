@@ -5,12 +5,14 @@ import { RecentTimelineList } from "./components/RecentTimelineList.tsx";
 import { ReviewProgress } from "./components/ReviewProgress.tsx";
 import { StatCard } from "./components/StatCard.tsx";
 import { computeDashboardStats } from "./dashboardStats.ts";
-import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
+import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
+import { useBookmarks } from "../../shared/state/bookmarksContext.ts";
 
 export function DashboardPage() {
-  // Bookmarks come from the one place that owns them (AppLayout state), not
+  // Bookmarks come from the one place that owns them (BookmarksContext), not
   // from a copy taken when the data was loaded.
-  const { data, bookmarks } = useLayoutContext();
+  const data = useCaseDataFromLayout();
+  const { bookmarks } = useBookmarks();
 
   // Derived values are recalculated from the current data on every render —
   // there is no cached HTML that could go stale.
