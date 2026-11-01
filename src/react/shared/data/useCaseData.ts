@@ -9,10 +9,10 @@ export type CaseDataState =
 /**
  * Loads the case data once when the component using it mounts.
  *
- * Used by <App />, which never unmounts, so the data survives navigation
- * between views. Placeholder architecture for Exercise 3: once views can
- * *change* data (bookmarks, review status, notes), this will move into a
- * shared store/context with update functions.
+ * Used by <AppLayout />, which never unmounts, so the data survives
+ * navigation between views. This is read-only case data; what the
+ * investigator changes (bookmarks, notes, review edits) is separate state
+ * owned by AppLayout / BookmarksProvider.
  */
 export function useCaseData(): CaseDataState {
   const [state, setState] = useState<CaseDataState>({ status: "loading" });
