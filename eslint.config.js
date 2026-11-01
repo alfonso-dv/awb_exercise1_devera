@@ -44,6 +44,14 @@ export default defineConfig([
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node }
   },
+  {
+    // Node scripts (dev backend, dev launcher): not part of the app's
+    // tsconfig, run in Node, and log to the console on purpose.
+    files: ["server/**/*.mjs", "scripts/**/*.mjs"],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { globals: globals.node },
+    rules: { "no-console": "off" }
+  },
   // Must stay last: turns off every stylistic rule that would fight Prettier.
   prettier
 ]);
