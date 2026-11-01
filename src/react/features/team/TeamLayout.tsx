@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router";
-import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
+import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
 
 function tabClass({ isActive }: { isActive: boolean }): string {
   return isActive ? "tab-btn active" : "tab-btn";
@@ -12,7 +12,7 @@ function tabClass({ isActive }: { isActive: boolean }): string {
  * the back button.
  */
 export function TeamLayout() {
-  const data = useCaseDataFromLayout();
+  const layout = useLayoutContext();
 
   return (
     <section className="view active">
@@ -27,8 +27,8 @@ export function TeamLayout() {
         </NavLink>
       </div>
 
-      {/* Pass the case data on to the nested tab routes. */}
-      <Outlet context={data} />
+      {/* Pass the layout context on to the nested tab routes. */}
+      <Outlet context={layout} />
     </section>
   );
 }

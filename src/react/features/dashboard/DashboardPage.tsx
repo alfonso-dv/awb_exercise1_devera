@@ -6,13 +6,17 @@ import { ReviewProgress } from "./components/ReviewProgress.tsx";
 import { StatCard } from "./components/StatCard.tsx";
 import { computeDashboardStats } from "./dashboardStats.ts";
 import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
+import { useBookmarks } from "../../shared/state/bookmarksContext.ts";
 
 export function DashboardPage() {
+  // Bookmarks come from the one place that owns them (BookmarksContext), not
+  // from a copy taken when the data was loaded.
   const data = useCaseDataFromLayout();
+  const { bookmarks } = useBookmarks();
 
   // Derived values are recalculated from the current data on every render —
   // there is no cached HTML that could go stale.
-  const stats = computeDashboardStats(data);
+  const stats = computeDashboardStats(data, bookmarks);
 
   return (
     <section className="view active">

@@ -1,7 +1,7 @@
 # Architecture — React app (`react.html`)
 
-State after Exercise 4. The vanilla app (`index.html`, `src/*.ts`) is unchanged and still
-implements Evidence and Workspace.
+State after Exercise 5: **all 5 views are React.** The vanilla app (`index.html`, `src/*.ts`)
+is kept unchanged for comparison.
 
 ## Folder structure: by feature
 
@@ -16,8 +16,7 @@ src/
     │   ├── layout/              AppLayout (header + <Outlet>, loads case data once),
     │   │                        AppHeader, NavBar
     │   ├── routing/navItems.ts  main navigation entries
-    │   ├── NotFoundPage.tsx     catch-all route
-    │   └── PlaceholderPage.tsx  stub for views not migrated yet (Evidence, Workspace)
+    │   └── NotFoundPage.tsx     catch-all route
     ├── features/                one folder per area of the app
     │   ├── dashboard/           DashboardPage, dashboardStats.ts, components/ (CaseSummaryCard,
     │   │                        StatCard, ReviewProgress, RecentEvidenceList, RecentTimelineList,
@@ -25,11 +24,21 @@ src/
     │   ├── team/                People & Locations: TeamLayout (tab routes), PeopleTab,
     │   │                        LocationsTab, PersonDetailPage, LocationDetailPage,
     │   │                        teamStats.ts, components/ (PersonCard, LocationCard)
-    │   └── timeline/            TimelinePage, timelineQuery.ts, components/ (TimelineEventList,
-    │                            TimelineEventItem, TimelineFiltersBar, CertaintyBadge)
+    │   ├── timeline/            TimelinePage, timelineQuery.ts, components/ (TimelineEventList,
+    │   │                        TimelineEventItem, TimelineFiltersBar, CertaintyBadge)
+    │   ├── evidence/            EvidencePage (filters useReducer), EvidenceDetailRoute,
+    │   │                        evidenceFilters.ts (reducer + filterAndSortEvidence),
+    │   │                        components/ (EvidenceToolbar, EvidenceList, EvidenceCard,
+    │   │                        BookmarkButton, EvidenceDetail, NoteEditor)
+    │   └── workspace/           WorkspacePage, components/ (BookmarksList, NotesList,
+    │                            HypothesisForm)
     ├── shared/                  used by two or more features
-    │   ├── components/          Panel, Badge, StatusBadge, BulletList, EmptyState, LoadingState
-    │   └── data/                loadCaseData, useCaseData, caseDataOutlet (useCaseDataFromLayout)
+    │   ├── components/          Panel, Badge, StatusBadge, RelevanceBadge, BulletList,
+    │   │                        EmptyState, LoadingState
+    │   ├── data/                loadCaseData, useCaseData, caseDataOutlet (LayoutContext,
+    │   │                        useLayoutContext, useCaseDataFromLayout)
+    │   └── state/               bookmarks.ts (toggleBookmarkId), BookmarksProvider +
+    │                            bookmarksContext.ts (useBookmarks), reviewEdits.ts
     └── sandbox/                 throwaway teaching demos (HelloCase, KeyIdentityDemo)
 ```
 
@@ -63,8 +72,10 @@ in plain `.ts` files next to them.
 | `/team/people/:personId` | `TeamLayout` › `PersonDetailPage` | route parameter |
 | `/team/locations` | `TeamLayout` › `LocationsTab` | tab = real route |
 | `/team/locations/:locationId` | `TeamLayout` › `LocationDetailPage` | route parameter |
-| `/timeline?order=&person=&location=&type=` | `TimelinePage` | query params set the initial list |
-| `/evidence`, `/workspace` | `PlaceholderPage` | link to the vanilla views |
+| `/timeline?order=&person=&location=&type=` | `TimelinePage` | filters live in the query string (URL = state) |
+| `/evidence` | `EvidencePage` | filters/search/sort in a `useReducer` |
+| `/evidence/:evidenceId` | `EvidencePage` › `EvidenceDetailRoute` | open item = route param |
+| `/workspace` | `WorkspacePage` | |
 | `/sandbox/keys?keys=index\|id&order=reversed&without=<id>` | `KeyIdentityDemo` | teaching demo |
 | anything else | `NotFoundPage` | catch-all `path="*"` |
 
@@ -76,10 +87,28 @@ are shared by every page.
 doesn't exist → 404. Everything after `#` never reaches the server, so every route survives a
 reload and can be bookmarked.
 
+## State: who owns what
+
+| State | Owner | How it reaches components | Persisted |
+|---|---|---|---|
+| Case data (read-only) | `useCaseData()` in `AppLayout` | outlet context → `useCaseDataFromLayout()` | – (fetched JSON) |
+| Bookmarks | `BookmarksProvider` (inside `AppLayout`) | React Context → `useBookmarks()` | localStorage |
+| Notes | `AppLayout` (`useState`) | outlet context: `notes`, `onSaveNote` → props | localStorage |
+| Review status / relevance edits | `AppLayout` (`useState`) | outlet context: `onReviewChange`; evidence passed down already merged (`applyReviewEdits`) | – (in memory, like the vanilla app) |
+| Evidence filters / search / sort | `EvidencePage` (`useReducer`) | props to `EvidenceToolbar` | – |
+| Open evidence item | URL (`/evidence/:evidenceId`) | `useParams` | URL |
+| Timeline filters | URL query string | `useSearchParams` / `setSearchParams` | URL |
+| Note draft | `NoteEditor` (`useState`, `key={ev.id}`) | local | – |
+| Hypothesis form draft | `HypothesisForm` (one `useState` object) | local; saved on submit | localStorage |
+
+**Derived, never stored:** the visible evidence list (`filterAndSortEvidence`), Dashboard numbers
+(`computeDashboardStats`), Workspace bookmark and note lists, evidence with review edits applied,
+the visible timeline events.
+
 ## Data flow
 
 1. `AppLayout` calls `useCaseData()` once → fetches the 5 JSON files in parallel
-   (`loadCaseData`) and reads bookmarks from `localStorage`.
+   (`loadCaseData`).
 2. While loading: `LoadingState`; on failure: an error banner; when ready:
    `<Outlet context={data} />`.
 3. Feature components (`DashboardPage`, `PeopleTab`, `TimelinePage`, …) read it with
@@ -88,5 +117,5 @@ reload and can be bookmarked.
    `parseTimelineQuery` + `applyTimelineFilters`) and pass plain props down.
 4. Presentational components only render their props.
 
-The only React state in the app is the loading state inside `useCaseData`. Interactive state
-(filters that actually filter, bookmarks, forms) arrives in Exercise 5.
+Changes flow back up through callbacks (`onSaveNote`, `onReviewChange`, `toggleBookmark`,
+reducer `dispatch`, `setSearchParams`); no component changes state it doesn't own.

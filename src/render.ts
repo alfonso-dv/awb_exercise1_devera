@@ -1,4 +1,5 @@
 import { state, STORAGE_KEY_HYPOTHESIS, type PeopleTab } from "./state.ts";
+import { parseHypothesisDraft, type HypothesisDraft } from "./storage.ts";
 import type { Evidence, Person, TimelineEvent } from "./types.ts";
 import { findElement, getElement, selectValue } from "./dom.ts";
 
@@ -1249,18 +1250,6 @@ function renderNotesList(): void {
   container.innerHTML = html;
 }
 
-/** Shape of the hypothesis draft saved in localStorage. */
-interface HypothesisDraft {
-  suspectId: string;
-  nature: string;
-  evidenceIds: string[];
-  /** Slider value as a string, e.g. "75" (input.value is always a string). */
-  confidence: string;
-  explanation: string;
-  alternative: string;
-  savedAt: string;
-}
-
 export function saveHypothesis(): void {
   const draft: HypothesisDraft = {
     suspectId: selectValue("hypSuspect"),
@@ -1342,47 +1331,4 @@ function loadHypothesisFromStorage(): void {
     evidenceSelect.options[i].selected =
       savedIds.indexOf(evidenceSelect.options[i].value) !== -1;
   }
-}
-
-/**
- * JSON.parse() returns `any`, which would silently switch type checking off
- * for every use of the draft. Treat the stored value as `unknown` and keep
- * only fields of the expected type, so a corrupt or outdated entry can't
- * break the workspace view.
- */
-function parseHypothesisDraft(raw: string): Partial<HypothesisDraft> {
-  let parsed: unknown;
-
-  try {
-    parsed = JSON.parse(raw);
-  } catch (err) {
-    console.warn("Ignoring unreadable hypothesis draft", err);
-    return {};
-  }
-
-  if (typeof parsed !== "object" || parsed === null) return {};
-
-  const draft: Partial<HypothesisDraft> = {};
-  const record = parsed as Record<string, unknown>;
-
-  for (const key of [
-    "suspectId",
-    "nature",
-    "confidence",
-    "explanation",
-    "alternative",
-    "savedAt"
-  ] as const) {
-    const value = record[key];
-    if (typeof value === "string") draft[key] = value;
-  }
-
-  const evidenceIds = record.evidenceIds;
-  if (Array.isArray(evidenceIds)) {
-    draft.evidenceIds = evidenceIds.filter(
-      (id): id is string => typeof id === "string"
-    );
-  }
-
-  return draft;
 }
