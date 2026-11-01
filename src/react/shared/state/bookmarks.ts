@@ -1,18 +1,26 @@
 import type { EvidenceId } from "../../../types.ts";
 
 /**
- * ❌ BROKEN ON PURPOSE (Exercise 5, Demo 3): the "first instinct" version.
- * It changes the array React already has and returns the SAME array.
- * (TypeScript's readonly type refuses push/splice, so it needs a cast —
- * that alone is a warning sign.)
+ * Pure: returns a NEW array with `id` added or removed. The input array is
+ * never changed, so React sees a different reference and re-renders.
+ *
+ * The result is frozen: if any code ever tries to mutate the bookmark state
+ * (push, splice, sort, index assignment), it throws a TypeError right away
+ * instead of silently skipping a re-render.
  */
 export function toggleBookmarkId(
   bookmarks: readonly EvidenceId[],
   id: EvidenceId
-): EvidenceId[] {
-  const list = bookmarks as EvidenceId[];
-  const index = list.indexOf(id);
-  if (index === -1) list.push(id);
-  else list.splice(index, 1);
-  return list;
+): readonly EvidenceId[] {
+  const next = bookmarks.includes(id)
+    ? bookmarks.filter((b) => b !== id)
+    : [...bookmarks, id];
+  return Object.freeze(next);
+}
+
+/** Frozen copy for the initial state (same guarantee from the first render). */
+export function frozenBookmarks(
+  ids: readonly EvidenceId[]
+): readonly EvidenceId[] {
+  return Object.freeze([...ids]);
 }

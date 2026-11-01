@@ -10,7 +10,10 @@ import {
 import { LoadingState } from "../../shared/components/LoadingState.tsx";
 import type { LayoutContext } from "../../shared/data/caseDataOutlet.ts";
 import { useCaseData } from "../../shared/data/useCaseData.ts";
-import { toggleBookmarkId } from "../../shared/state/bookmarks.ts";
+import {
+  frozenBookmarks,
+  toggleBookmarkId
+} from "../../shared/state/bookmarks.ts";
 import {
   applyReviewEdits,
   setReviewField,
@@ -33,8 +36,9 @@ export function AppLayout() {
   const caseData = useCaseData();
 
   // Lazy initialisers: localStorage is read once, on the first render only.
-  const [bookmarks, setBookmarks] =
-    useState<readonly EvidenceId[]>(readStoredBookmarks);
+  const [bookmarks, setBookmarks] = useState<readonly EvidenceId[]>(() =>
+    frozenBookmarks(readStoredBookmarks())
+  );
   const [notes, setNotes] =
     useState<Readonly<Record<EvidenceId, string>>>(readStoredNotes);
   const [reviewEdits, setReviewEdits] = useState<ReviewEdits>({});
