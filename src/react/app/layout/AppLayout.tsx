@@ -66,7 +66,8 @@ export function AppLayout() {
       },
       notes,
       onSaveNote: handleSaveNote,
-      onReviewChange: handleReviewChange
+      onReviewChange: handleReviewChange,
+      withReviewEdits: (ev) => applyReviewEdits([ev], reviewEdits)[0] ?? ev
     };
     content = <Outlet context={context} />;
   }
