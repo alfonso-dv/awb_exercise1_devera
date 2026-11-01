@@ -9,18 +9,19 @@ import { Panel } from "../../shared/components/Panel.tsx";
 import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
 import { EvidenceDetail } from "./components/EvidenceDetail.tsx";
 
-/** The last response that arrived (null = nothing has arrived yet). */
+/** A finished request, remembered together with the id it was for. */
 type ItemResult =
-  { status: "error"; error: unknown } | { status: "ready"; item: RawEvidence };
+  | { forId: string; status: "error"; error: unknown }
+  | { forId: string; status: "ready"; item: RawEvidence };
 
 /**
  * /evidence/:evidenceId — fetches the selected item fresh from the server
  * (GET /api/evidence/:id) whenever the id in the URL changes.
  *
- * ⚠️ NAIVE VERSION (Exercise 6, Demo 7 — before the fix): responses are used
- * in whatever order they arrive. Open E01 and then quickly E02 with
- * react.html?slow=E01&delay=3000#/evidence — E02 appears, then E01's late
- * response overwrites it while the URL still says E02.
+ * Request races: when the id changes, the effect's cleanup aborts the
+ * request for the previous id (AbortController), so a slow, outdated response
+ * can never overwrite the current one. Each result also remembers which id it
+ * belongs to; anything else counts as "still loading".
  */
 export function EvidenceDetailRoute() {
   const { evidenceId = "" } = useParams<{ evidenceId: string }>();
@@ -29,12 +30,24 @@ export function EvidenceDetailRoute() {
   const [result, setResult] = useState<ItemResult | null>(null);
 
   useEffect(() => {
-    getEvidenceItem(evidenceId)
-      .then((item) => setResult({ status: "ready", item }))
-      .catch((error: unknown) => setResult({ status: "error", error }));
+    const controller = new AbortController();
+
+    getEvidenceItem(evidenceId, controller.signal)
+      .then((item) => setResult({ forId: evidenceId, status: "ready", item }))
+      .catch((error: unknown) => {
+        // Aborted on purpose (id changed / unmounted): not an error to show.
+        if (controller.signal.aborted) return;
+        setResult({ forId: evidenceId, status: "error", error });
+      });
+
+    // Cleanup: runs before the effect runs again for a new id, and on
+    // unmount. Aborting cancels the HTTP request AND makes its promise
+    // reject, so the .then above never sets state for an old id.
+    return () => controller.abort();
   }, [evidenceId]);
 
-  if (result === null) {
+  // No result yet for THIS id (first load, or the id just changed).
+  if (result === null || result.forId !== evidenceId) {
     return (
       <Panel title={`Loading ${evidenceId}…`}>
         <div className="spinner" />
