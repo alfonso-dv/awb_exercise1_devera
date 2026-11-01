@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router";
 import type { EvidenceId } from "../../../types.ts";
 import { readStoredNotes, writeStoredNotes } from "../../../storage.ts";
+import { ErrorState } from "../../shared/components/ErrorState.tsx";
 import { LoadingState } from "../../shared/components/LoadingState.tsx";
 import type { LayoutContext } from "../../shared/data/caseDataOutlet.ts";
 import { useCaseData } from "../../shared/data/useCaseData.ts";
@@ -26,7 +27,7 @@ import { AppHeader } from "./AppHeader.tsx";
  * useBookmarks().
  */
 export function AppLayout() {
-  const caseData = useCaseData();
+  const { state: caseData, retry } = useCaseData();
 
   // Lazy initialisers: localStorage is read once, on the first render only.
   const [notes, setNotes] =
@@ -53,13 +54,11 @@ export function AppLayout() {
 
   if (caseData.status === "error") {
     content = (
-      <div className="warning-banner">
-        The case file could not be loaded. Please reload the page.
-      </div>
+      <ErrorState what="the case file" error={caseData.error} onRetry={retry} />
     );
   }
 
-  if (caseData.status === "ready") {
+  if (caseData.status === "success") {
     const context: LayoutContext = {
       data: {
         ...caseData.data,
@@ -67,7 +66,8 @@ export function AppLayout() {
       },
       notes,
       onSaveNote: handleSaveNote,
-      onReviewChange: handleReviewChange
+      onReviewChange: handleReviewChange,
+      withReviewEdits: (ev) => applyReviewEdits([ev], reviewEdits)[0] ?? ev
     };
     content = <Outlet context={context} />;
   }

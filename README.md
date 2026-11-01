@@ -36,6 +36,36 @@ after the `#`, e.g. `react.html#/evidence/E05` or `react.html#/timeline?person=n
 Static files that are fetched at runtime (`data/*.json`, person avatars) live in `public/` and are
 copied unchanged into `dist/`.
 
+## Development backend (local only, not deployed)
+
+Since Exercise 6 the React app reads the case data from a small **read-only Node/Express API**
+(`server/index.mjs`) during development. It serves the same `public/data/*.json` files as GET
+endpoints. It is **dev-only**: the GitHub Pages workflow still deploys only the static frontend,
+and production builds read the static JSON files instead.
+
+```bash
+npm run dev:all   # API (port 3001) + Vite dev server in one terminal
+# or in two terminals:
+npm run api       # http://localhost:3001/api
+npm run dev       # Vite forwards /api/* to the API (proxy), so no CORS setup is needed
+```
+
+Endpoints: `/api/case`, `/api/people`, `/api/locations`, `/api/evidence`, `/api/timeline`,
+`/api/evidence/:id`, `/api/people/:id`, `/api/health`.
+
+Simulate real-world conditions by adding parameters to the **page URL before the `#`** (the app
+forwards them to every API request), or directly to an API URL:
+
+| Parameter | Effect |
+|---|---|
+| `?delay=2000` | every response waits 2 s (loading states) |
+| `?fail=500` | every request fails with that status (error states) |
+| `?fail=500&failOnly=evidence` | only requests for that resource fail |
+| `?empty=1` | list endpoints return `[]` (empty states) |
+| `?slow=E01&delay=3000` | only the detail request for E01 is slow (request races) |
+
+Example: `http://localhost:5173/react.html?delay=1500#/evidence`.
+
 ## Code quality & CI/CD
 
 ```bash

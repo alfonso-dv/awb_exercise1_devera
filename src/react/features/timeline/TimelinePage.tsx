@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router";
+import { EmptyState } from "../../shared/components/EmptyState.tsx";
 import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
 import { TimelineEventList } from "./components/TimelineEventList.tsx";
 import { TimelineFiltersBar } from "./components/TimelineFiltersBar.tsx";
@@ -8,6 +9,7 @@ import {
   parseTimelineQuery,
   type TimelineFilters
 } from "./timelineQuery.ts";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 /**
  * /timeline?order=desc&person=nova-byte&location=L03&type=access
@@ -19,6 +21,7 @@ import {
  * bookmarkable and works with Back/Forward.
  */
 export function TimelinePage() {
+  useDocumentTitle("Timeline");
   const { timeline, people, locations } = useCaseDataFromLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -66,11 +69,17 @@ export function TimelinePage() {
         </div>
       )}
 
-      <TimelineEventList
-        events={events}
-        people={people}
-        locations={locations}
-      />
+      {timeline.length === 0 ? (
+        <EmptyState>
+          The case file doesn&apos;t contain any timeline events yet.
+        </EmptyState>
+      ) : (
+        <TimelineEventList
+          events={events}
+          people={people}
+          locations={locations}
+        />
+      )}
     </section>
   );
 }

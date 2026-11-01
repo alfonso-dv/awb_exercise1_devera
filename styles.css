@@ -864,3 +864,30 @@ a.tab-btn {
   display: grid;
   gap: 16px;
 }
+
+/* React app: the three data states look clearly different.
+   Loading = spinner (.loading-box), error = red banner (.error-state),
+   empty = dashed grey box (.empty-state). */
+.empty-state {
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-panel);
+  color: var(--color-text-muted);
+  padding: 18px;
+  text-align: center;
+}
+.error-state {
+  background: #fbeae8;
+  border: 1px solid #f0c4bd;
+  border-left: 4px solid var(--color-critical);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.error-state h3 {
+  color: var(--color-critical);
+  margin: 0 0 6px;
+}
+.error-state p {
+  margin: 0 0 10px;
+}

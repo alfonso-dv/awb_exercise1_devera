@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { Evidence, Person } from "../../../../types.ts";
 import {
   readStoredHypothesis,
@@ -8,6 +8,9 @@ import {
 
 /** The editable fields (savedAt is set when saving). */
 type DraftFields = Omit<HypothesisDraft, "savedAt">;
+
+/** How long the "Saved at …" confirmation stays visible. */
+const SAVED_MESSAGE_MS = 4000;
 
 const EMPTY_DRAFT: DraftFields = {
   suspectId: "",
@@ -46,6 +49,16 @@ export function HypothesisForm({ people, evidence }: HypothesisFormProps) {
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [saveError, setSaveError] = useState(false);
 
+  // Hide the "Saved at …" message again after a few seconds. The timer is a
+  // side effect, so it lives in an effect; the cleanup cancels it when the
+  // user saves again (savedAt changes) or leaves the page. Without the
+  // cleanup, a timer from an earlier save would hide the NEW message early.
+  useEffect(() => {
+    if (savedAt === null) return;
+    const timer = setTimeout(() => setSavedAt(null), SAVED_MESSAGE_MS);
+    return () => clearTimeout(timer);
+  }, [savedAt]);
+
   function updateField<K extends keyof DraftFields>(
     field: K,
     value: DraftFields[K]
@@ -64,7 +77,7 @@ export function HypothesisForm({ people, evidence }: HypothesisFormProps) {
     try {
       writeStoredHypothesis(toSave);
       setSaveError(false);
-      setSavedAt(new Date(toSave.savedAt).toLocaleTimeString());
+      setSavedAt(toSave.savedAt); // ISO timestamp: unique per save
     } catch (err) {
       console.error("Could not save hypothesis draft", err);
       setSaveError(true);
@@ -168,7 +181,9 @@ export function HypothesisForm({ people, evidence }: HypothesisFormProps) {
             Save hypothesis draft
           </button>
           {savedAt && !saveError && (
-            <span className="saved-msg">Saved at {savedAt}</span>
+            <span className="saved-msg">
+              Saved at {new Date(savedAt).toLocaleTimeString()}
+            </span>
           )}
           {saveError && (
             <span className="saved-msg">Could not save to local storage.</span>

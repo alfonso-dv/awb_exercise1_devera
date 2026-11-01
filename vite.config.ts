@@ -16,6 +16,14 @@ export default defineConfig({
     // a browser overlay. `npm run build` runs `tsc` explicitly instead.
     checker({ typescript: true, enableBuild: false })
   ],
+  server: {
+    // Dev only: requests to /api/* are forwarded to the local backend
+    // (npm run api, port 3001). The browser only ever talks to Vite's origin,
+    // so no CORS configuration is needed.
+    proxy: {
+      "/api": "http://localhost:3001"
+    }
+  },
   build: {
     // Two entry pages while the migration is in progress:
     //   index.html -> the working vanilla TypeScript app

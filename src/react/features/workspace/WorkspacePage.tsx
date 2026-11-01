@@ -3,9 +3,11 @@ import { useBookmarks } from "../../shared/state/bookmarksContext.ts";
 import { BookmarksList } from "./components/BookmarksList.tsx";
 import { HypothesisForm } from "./components/HypothesisForm.tsx";
 import { NotesList, type NoteEntry } from "./components/NotesList.tsx";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 /** /workspace */
 export function WorkspacePage() {
+  useDocumentTitle("Workspace");
   const { data, notes } = useLayoutContext();
   const { bookmarks, toggleBookmark } = useBookmarks();
 

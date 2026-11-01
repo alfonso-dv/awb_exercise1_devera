@@ -1,5 +1,5 @@
 import { useOutletContext } from "react-router";
-import type { EvidenceId } from "../../../types.ts";
+import type { Evidence, EvidenceId } from "../../../types.ts";
 import type { ReviewField } from "../state/reviewEdits.ts";
 import type { CaseData } from "./loadCaseData.ts";
 
@@ -15,6 +15,8 @@ export interface LayoutContext {
   notes: Readonly<Record<EvidenceId, string>>;
   onSaveNote: (id: EvidenceId, text: string) => void;
   onReviewChange: (id: EvidenceId, field: ReviewField, value: string) => void;
+  /** Applies the investigator's review edits to an evidence item. */
+  withReviewEdits: (evidence: Evidence) => Evidence;
 }
 
 /** The whole layout context (state + callbacks). */

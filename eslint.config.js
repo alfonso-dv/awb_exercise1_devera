@@ -44,6 +44,30 @@ export default defineConfig([
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node }
   },
+  {
+    // Layering (Exercise 6, Demo 9): in the React app only the API-access
+    // layer (src/react/shared/api) may talk to the network.
+    files: ["src/react/**/*.ts", "src/react/**/*.tsx"],
+    ignores: ["src/react/shared/api/**"],
+    rules: {
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "fetch",
+          message:
+            "Call a function from src/react/shared/api instead of fetch() in components/hooks."
+        }
+      ]
+    }
+  },
+  {
+    // Node scripts (dev backend, dev launcher): not part of the app's
+    // tsconfig, run in Node, and log to the console on purpose.
+    files: ["server/**/*.mjs", "scripts/**/*.mjs"],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: { globals: globals.node },
+    rules: { "no-console": "off" }
+  },
   // Must stay last: turns off every stylistic rule that would fight Prettier.
   prettier
 ]);
