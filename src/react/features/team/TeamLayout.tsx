@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router";
 import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 function tabClass({ isActive }: { isActive: boolean }): string {
   return isActive ? "tab-btn active" : "tab-btn";
@@ -12,6 +13,7 @@ function tabClass({ isActive }: { isActive: boolean }): string {
  * the back button.
  */
 export function TeamLayout() {
+  useDocumentTitle("People & Locations");
   const layout = useLayoutContext();
 
   return (

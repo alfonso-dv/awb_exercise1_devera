@@ -7,8 +7,10 @@ import { StatCard } from "./components/StatCard.tsx";
 import { computeDashboardStats } from "./dashboardStats.ts";
 import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
 import { useBookmarks } from "../../shared/state/bookmarksContext.ts";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 export function DashboardPage() {
+  useDocumentTitle("Dashboard");
   // Bookmarks come from the one place that owns them (BookmarksContext), not
   // from a copy taken when the data was loaded.
   const data = useCaseDataFromLayout();

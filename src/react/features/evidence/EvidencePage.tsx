@@ -10,6 +10,7 @@ import {
   INITIAL_FILTERS,
   isEvidenceSort
 } from "./evidenceFilters.ts";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 /**
  * /evidence and /evidence/:evidenceId (the detail view renders in <Outlet />).
@@ -19,6 +20,7 @@ import {
  * the filters survive opening items.
  */
 export function EvidencePage() {
+  useDocumentTitle("Evidence Catalogue");
   const layout = useLayoutContext();
   const { evidence, people, locations } = layout.data;
   const { evidenceId: selectedId } = useParams<{ evidenceId: string }>();

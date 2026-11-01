@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router";
+import { useDocumentTitle } from "../shared/hooks/useDocumentTitle.ts";
 
 /** Rendered by the catch-all route (path="*") for any unknown URL. */
 export function NotFoundPage() {
+  useDocumentTitle("Page not found");
   const { pathname } = useLocation();
 
   return (

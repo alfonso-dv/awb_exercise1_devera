@@ -8,6 +8,7 @@ import {
   parseTimelineQuery,
   type TimelineFilters
 } from "./timelineQuery.ts";
+import { useDocumentTitle } from "../../shared/hooks/useDocumentTitle.ts";
 
 /**
  * /timeline?order=desc&person=nova-byte&location=L03&type=access
@@ -19,6 +20,7 @@ import {
  * bookmarkable and works with Back/Forward.
  */
 export function TimelinePage() {
+  useDocumentTitle("Timeline");
   const { timeline, people, locations } = useCaseDataFromLayout();
   const [searchParams, setSearchParams] = useSearchParams();
 
