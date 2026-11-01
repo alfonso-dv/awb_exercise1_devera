@@ -95,7 +95,10 @@ export function EvidenceDetail({
         </select>
       </div>
 
-      <NoteEditor savedNote={savedNote} onSave={onSaveNote} />
+      {/* key: a different evidence item gets a fresh editor (and a fresh
+          draft). Without it React reuses the same NoteEditor instance and
+          its draft state from the previously opened item. */}
+      <NoteEditor key={ev.id} savedNote={savedNote} onSave={onSaveNote} />
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import type { CaseData } from "../../shared/data/loadCaseData.ts";
+import type { EvidenceId } from "../../../types.ts";
 import type { Evidence, TimelineEvent } from "../../../types.ts";
 
 export interface DashboardStats {
@@ -16,7 +17,10 @@ export interface DashboardStats {
 }
 
 /** Pure function: same input -> same numbers. Computed on every render. */
-export function computeDashboardStats(data: CaseData): DashboardStats {
+export function computeDashboardStats(
+  data: CaseData,
+  bookmarks: readonly EvidenceId[]
+): DashboardStats {
   const reviewedCount = data.evidence.filter(
     (ev) => (ev.status || "").toLowerCase() === "reviewed"
   ).length;
@@ -27,7 +31,7 @@ export function computeDashboardStats(data: CaseData): DashboardStats {
     evidenceCount,
     peopleCount: data.people.length,
     locationCount: data.locations.length,
-    bookmarkCount: data.bookmarks.length,
+    bookmarkCount: bookmarks.length,
     reviewedCount,
     reviewProgressPct:
       evidenceCount === 0

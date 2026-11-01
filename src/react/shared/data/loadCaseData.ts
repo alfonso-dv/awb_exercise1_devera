@@ -1,5 +1,4 @@
 import { fetchJson, normalizeEvidence } from "../../../data.ts";
-import { readStoredBookmarks } from "../../../storage.ts";
 import type {
   CaseInfo,
   CaseLocation,
@@ -16,8 +15,6 @@ export interface CaseData {
   locations: CaseLocation[];
   evidence: Evidence[];
   timeline: TimelineEvent[];
-  /** Bookmarked evidence ids (shared with the vanilla app via localStorage). */
-  bookmarks: string[];
 }
 
 /**
@@ -41,7 +38,6 @@ export async function loadCaseData(): Promise<CaseData> {
     people,
     locations,
     evidence: rawEvidence.map((raw) => normalizeEvidence(raw, people)),
-    timeline,
-    bookmarks: readStoredBookmarks()
+    timeline
   };
 }
