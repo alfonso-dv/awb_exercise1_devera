@@ -58,7 +58,7 @@ export function AppLayout() {
     );
   }
 
-  if (caseData.status === "ready") {
+  if (caseData.status === "success") {
     const context: LayoutContext = {
       data: {
         ...caseData.data,
