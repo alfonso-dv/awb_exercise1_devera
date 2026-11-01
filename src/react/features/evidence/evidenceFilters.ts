@@ -29,6 +29,40 @@ export const INITIAL_FILTERS: EvidenceFilters = {
   sort: "date-desc"
 };
 
+/** The filter fields that are plain <select>s (everything except search & sort). */
+export type SelectFilter =
+  "type" | "person" | "location" | "status" | "relevance";
+
+/** Everything that can happen to the filters. */
+export type FilterAction =
+  | { type: "SET_SEARCH"; value: string }
+  | { type: "SET_FILTER"; field: SelectFilter; value: string }
+  | { type: "SET_SORT"; sort: EvidenceSort }
+  | { type: "CLEAR_FILTERS" };
+
+/**
+ * Reducer: (current filters, action) -> next filters. Pure — always returns
+ * a new object (or the initial one), never changes `state`. All the rules
+ * for how the filters change live here, in one place.
+ */
+export function filtersReducer(
+  state: EvidenceFilters,
+  action: FilterAction
+): EvidenceFilters {
+  switch (action.type) {
+    case "SET_SEARCH":
+      return { ...state, search: action.value };
+    case "SET_FILTER":
+      return { ...state, [action.field]: action.value };
+    case "SET_SORT":
+      return { ...state, sort: action.sort };
+    case "CLEAR_FILTERS":
+      // Every field back to its initial value in one step — a new field added
+      // to EvidenceFilters is reset automatically (it's in INITIAL_FILTERS).
+      return INITIAL_FILTERS;
+  }
+}
+
 export function isEvidenceSort(value: string): value is EvidenceSort {
   return ["date-desc", "date-asc", "title-asc", "title-desc"].includes(value);
 }

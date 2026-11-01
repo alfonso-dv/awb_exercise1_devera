@@ -1,25 +1,22 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { Outlet, useNavigate, useParams } from "react-router";
 import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
 import { EvidenceList } from "./components/EvidenceList.tsx";
-import {
-  EvidenceToolbar,
-  type SelectFilter
-} from "./components/EvidenceToolbar.tsx";
+import { EvidenceToolbar } from "./components/EvidenceToolbar.tsx";
 import {
   evidenceTypes,
   filterAndSortEvidence,
+  filtersReducer,
   INITIAL_FILTERS,
-  isEvidenceSort,
-  type EvidenceFilters,
-  type EvidenceSort
+  isEvidenceSort
 } from "./evidenceFilters.ts";
 
 /**
  * /evidence and /evidence/:evidenceId (the detail view renders in <Outlet />).
  *
- * Owns the filter/search/sort state. Because this component stays mounted
- * while a detail route opens and closes, the filters survive opening items.
+ * Owns the filter/search/sort state — one useReducer for the 7 related values.
+ * Because this component stays mounted while a detail route opens and closes,
+ * the filters survive opening items.
  */
 export function EvidencePage() {
   const layout = useLayoutContext();
@@ -27,48 +24,10 @@ export function EvidencePage() {
   const { evidenceId: selectedId } = useParams<{ evidenceId: string }>();
   const navigate = useNavigate();
 
-  const [search, setSearch] = useState("");
-  const [type, setType] = useState("");
-  const [person, setPerson] = useState("");
-  const [location, setLocation] = useState("");
-  const [status, setStatus] = useState("");
-  const [relevance, setRelevance] = useState("");
-  const [sort, setSort] = useState<EvidenceSort>(INITIAL_FILTERS.sort);
-
-  const filters: EvidenceFilters = {
-    search,
-    type,
-    person,
-    location,
-    status,
-    relevance,
-    sort
-  };
+  const [filters, dispatch] = useReducer(filtersReducer, INITIAL_FILTERS);
 
   // Derived on every render from the full list + the current filters.
   const visible = filterAndSortEvidence(evidence, filters);
-
-  function handleFilterChange(field: SelectFilter, value: string): void {
-    if (field === "type") setType(value);
-    if (field === "person") setPerson(value);
-    if (field === "location") setLocation(value);
-    if (field === "status") setStatus(value);
-    if (field === "relevance") setRelevance(value);
-  }
-
-  function handleSortChange(value: string): void {
-    if (isEvidenceSort(value)) setSort(value);
-  }
-
-  function handleClear(): void {
-    setSearch("");
-    setType("");
-    setPerson("");
-    setLocation("");
-    setStatus("");
-    setRelevance("");
-    setSort(INITIAL_FILTERS.sort);
-  }
 
   return (
     <section className="view active">
@@ -79,10 +38,15 @@ export function EvidencePage() {
         types={evidenceTypes(evidence)}
         people={people}
         locations={locations}
-        onSearchChange={setSearch}
-        onFilterChange={handleFilterChange}
-        onSortChange={handleSortChange}
-        onClear={handleClear}
+        onSearchChange={(value) => dispatch({ type: "SET_SEARCH", value })}
+        onFilterChange={(field, value) =>
+          dispatch({ type: "SET_FILTER", field, value })
+        }
+        onSortChange={(value) => {
+          if (isEvidenceSort(value))
+            dispatch({ type: "SET_SORT", sort: value });
+        }}
+        onClear={() => dispatch({ type: "CLEAR_FILTERS" })}
       />
 
       {/* Detail view of the selected item (child route), above the list. */}
