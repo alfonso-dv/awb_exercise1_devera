@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router";
+import { EmptyState } from "../../shared/components/EmptyState.tsx";
 import { useCaseDataFromLayout } from "../../shared/data/caseDataOutlet.ts";
 import { TimelineEventList } from "./components/TimelineEventList.tsx";
 import { TimelineFiltersBar } from "./components/TimelineFiltersBar.tsx";
@@ -68,11 +69,17 @@ export function TimelinePage() {
         </div>
       )}
 
-      <TimelineEventList
-        events={events}
-        people={people}
-        locations={locations}
-      />
+      {timeline.length === 0 ? (
+        <EmptyState>
+          The case file doesn&apos;t contain any timeline events yet.
+        </EmptyState>
+      ) : (
+        <TimelineEventList
+          events={events}
+          people={people}
+          locations={locations}
+        />
+      )}
     </section>
   );
 }

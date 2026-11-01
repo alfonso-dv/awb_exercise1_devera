@@ -1,6 +1,7 @@
 import { useReducer } from "react";
 import { Outlet, useNavigate, useParams } from "react-router";
 import { useLayoutContext } from "../../shared/data/caseDataOutlet.ts";
+import { EmptyState } from "../../shared/components/EmptyState.tsx";
 import { EvidenceList } from "./components/EvidenceList.tsx";
 import { EvidenceToolbar } from "./components/EvidenceToolbar.tsx";
 import {
@@ -30,6 +31,19 @@ export function EvidencePage() {
 
   // Derived on every render from the full list + the current filters.
   const visible = filterAndSortEvidence(evidence, filters);
+
+  // Loaded successfully, but there is nothing at all (not: nothing matches).
+  if (evidence.length === 0) {
+    return (
+      <section className="view active">
+        <h2>Evidence Catalogue</h2>
+        <EmptyState>
+          The case file doesn&apos;t contain any evidence yet. New evidence will
+          appear here as soon as it is added.
+        </EmptyState>
+      </section>
+    );
+  }
 
   return (
     <section className="view active">
