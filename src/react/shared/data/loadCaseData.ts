@@ -1,10 +1,16 @@
-import { fetchJson, normalizeEvidence } from "../../../data.ts";
+import { normalizeEvidence } from "../../../data.ts";
+import {
+  getCaseInfo,
+  getEvidenceList,
+  getLocations,
+  getPeople,
+  getTimeline
+} from "../api/caseApi.ts";
 import type {
   CaseInfo,
   CaseLocation,
   Evidence,
   Person,
-  RawEvidence,
   TimelineEvent
 } from "../../../types.ts";
 
@@ -18,19 +24,18 @@ export interface CaseData {
 }
 
 /**
- * Reuses the typed loader helpers from Exercise 2 (fetchJson,
- * normalizeEvidence). Unlike the vanilla app, which loads in three stages and
- * re-renders after each, the files are requested in parallel and the views
- * render once everything is there.
+ * Loads all case data through the API layer (the dev backend, or the static
+ * files in production). The 5 requests run in parallel; `signal` cancels all
+ * of them at once.
  */
-export async function loadCaseData(): Promise<CaseData> {
+export async function loadCaseData(signal?: AbortSignal): Promise<CaseData> {
   const [caseInfo, people, locations, rawEvidence, timeline] =
     await Promise.all([
-      fetchJson<CaseInfo>("data/case.json"),
-      fetchJson<Person[]>("data/people.json"),
-      fetchJson<CaseLocation[]>("data/locations.json"),
-      fetchJson<RawEvidence[]>("data/evidence.json"),
-      fetchJson<TimelineEvent[]>("data/timeline.json")
+      getCaseInfo(signal),
+      getPeople(signal),
+      getLocations(signal),
+      getEvidenceList(signal),
+      getTimeline(signal)
     ]);
 
   return {
