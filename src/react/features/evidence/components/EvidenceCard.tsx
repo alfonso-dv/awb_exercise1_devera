@@ -1,0 +1,53 @@
+import type { Evidence, EvidenceId } from "../../../../types.ts";
+import { formatDate } from "../../../../utils.ts";
+import { Badge } from "../../../shared/components/Badge.tsx";
+import { RelevanceBadge } from "../../../shared/components/RelevanceBadge.tsx";
+import { StatusBadge } from "../../../shared/components/StatusBadge.tsx";
+import { BookmarkButton } from "./BookmarkButton.tsx";
+
+interface EvidenceCardProps {
+  evidence: Evidence;
+  bookmarked: boolean;
+  /** Is this the item currently open in the detail view? */
+  selected: boolean;
+  onToggleBookmark: (id: EvidenceId) => void;
+  onOpen: (id: EvidenceId) => void;
+}
+
+export function EvidenceCard({
+  evidence: ev,
+  bookmarked,
+  selected,
+  onToggleBookmark,
+  onOpen
+}: EvidenceCardProps) {
+  return (
+    <div
+      className={selected ? "evidence-card selected" : "evidence-card"}
+      onClick={() => onOpen(ev.id)}
+    >
+      <BookmarkButton
+        bookmarked={bookmarked}
+        title={ev.title}
+        onToggle={() => onToggleBookmark(ev.id)}
+      />
+      <h3>{ev.title}</h3>
+      <div className="evidence-meta">
+        {ev.id} &middot; {ev.type} &middot; {formatDate(ev.timestamp)}
+      </div>
+      <div className="evidence-summary">{ev.summary}</div>
+      {ev.tags.includes("critical") && (
+        <Badge variant="critical">Critical</Badge>
+      )}
+      <StatusBadge status={ev.status} />
+      <RelevanceBadge relevance={ev.relevance} />
+      <div>
+        {ev.tags.map((tag) => (
+          <span key={tag} className="tag-chip">
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}

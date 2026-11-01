@@ -1,5 +1,8 @@
 import { HashRouter, Navigate, Route, Routes } from "react-router";
 import { DashboardPage } from "../features/dashboard/DashboardPage.tsx";
+import { EvidenceDetailRoute } from "../features/evidence/EvidenceDetailRoute.tsx";
+import { EvidencePage } from "../features/evidence/EvidencePage.tsx";
+import { WorkspacePage } from "../features/workspace/WorkspacePage.tsx";
 import { LocationDetailPage } from "../features/team/LocationDetailPage.tsx";
 import { LocationsTab } from "../features/team/LocationsTab.tsx";
 import { PeopleTab } from "../features/team/PeopleTab.tsx";
@@ -9,7 +12,6 @@ import { TimelinePage } from "../features/timeline/TimelinePage.tsx";
 import { KeyIdentityDemo } from "../sandbox/KeyIdentityDemo.tsx";
 import { AppLayout } from "./layout/AppLayout.tsx";
 import { NotFoundPage } from "./NotFoundPage.tsx";
-import { PlaceholderPage } from "./PlaceholderPage.tsx";
 
 /**
  * Route table.
@@ -38,25 +40,10 @@ export function App() {
           </Route>
 
           <Route path="timeline" element={<TimelinePage />} />
-
-          <Route
-            path="evidence"
-            element={
-              <PlaceholderPage
-                title="Evidence Catalogue"
-                vanillaView="evidence"
-              />
-            }
-          />
-          <Route
-            path="workspace"
-            element={
-              <PlaceholderPage
-                title="Investigator Workspace"
-                vanillaView="workspace"
-              />
-            }
-          />
+          <Route path="evidence" element={<EvidencePage />}>
+            <Route path=":evidenceId" element={<EvidenceDetailRoute />} />
+          </Route>
+          <Route path="workspace" element={<WorkspacePage />} />
 
           {/* Throwaway demo for Exercise 4, Demo 4 (not linked in the nav). */}
           <Route path="sandbox/keys" element={<KeyIdentityDemo />} />
