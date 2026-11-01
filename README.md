@@ -25,10 +25,9 @@ npm run build     # type-check (tsc) + production build into dist/
 npm run preview   # serve the built dist/ locally
 ```
 
-During the React migration there are two pages: `index.html` is the complete vanilla TypeScript
-app, and `react.html` is the React version. Dashboard, People & Locations and Timeline are fully
-React; Evidence and Workspace still link back to the vanilla app. React routes live after the `#`,
-e.g. `react.html#/team/people/nova-byte` or `react.html#/timeline?person=nova-byte`. See
+There are two pages: `index.html` is the original vanilla TypeScript app (kept for comparison) and
+`react.html` is the React version, in which all 5 views are now implemented. React routes live
+after the `#`, e.g. `react.html#/evidence/E05` or `react.html#/timeline?person=nova-byte`. See
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the folder structure and routes.
 
 > Don't open the app with VS Code Live Server or by double-clicking `index.html` — the TypeScript
